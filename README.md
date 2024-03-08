@@ -21,7 +21,7 @@ pip install git+https://github.com/ml-evs/datalab-python-api
 This package implemented some basic functionality for displaying and manipulating entries:
 
 ```python
-from pydatalab.api import DatalabClient
+from datalab_api import DatalabClient
 
 with DatalabClient("https://api.public.odbx.science", api_key=<MY_API_KEY>) as client:
     item = client.get_items(item_id="test", show=True)
