@@ -21,8 +21,8 @@ classifiers = [
 
 requires-python = ">=3.10"
 dependencies =[
-    "httpx",  # better HTTP requests
-    "rich",   # nicer terminal output
+    "httpx ~= 0.27",  # better HTTP requests
+    "rich ~= 13.0",   # nicer terminal output
     "bokeh ~= 2.4"  # interactive plots from datalab directly
 ]
 
