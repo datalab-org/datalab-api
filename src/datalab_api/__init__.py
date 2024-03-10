@@ -1,8 +1,8 @@
+import logging
 import os
 from importlib.metadata import version
-from typing import Any
 from pathlib import Path
-import logging
+from typing import Any
 
 import httpx
 from rich.logging import RichHandler
@@ -202,7 +202,9 @@ class DatalabClient:
 
         return items["items"]
 
-    def create_item(self, item_id: str, item_type: str, item_data: dict[str, Any] | None = None) -> dict[str, Any]:
+    def create_item(
+        self, item_id: str, item_type: str, item_data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Create an item with a given ID and item data.
 
         Parameters:
@@ -227,7 +229,9 @@ class DatalabClient:
         try:
             created_item = create_item_resp.json()
             if created_item["status"] != "success":
-                raise RuntimeError(f"Failed to create item at {create_item_url}: {created_item['status']!r}.")
+                raise RuntimeError(
+                    f"Failed to create item at {create_item_url}: {created_item['status']!r}."
+                )
             return created_item["sample_list_entry"]
 
         except Exception:
@@ -261,7 +265,9 @@ class DatalabClient:
             )
         updated_item = update_item_resp.json()
         if updated_item["status"] != "success":
-            raise RuntimeError(f"Failed to update item at {update_item_url}: {updated_item['status']!r}.")
+            raise RuntimeError(
+                f"Failed to update item at {update_item_url}: {updated_item['status']!r}."
+            )
         return updated_item
 
     def get_item(

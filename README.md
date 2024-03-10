@@ -8,12 +8,15 @@ This API may not expose all the functionality available in a given datalab insta
 This means that the API is primarily *functional* in nature, as opposed to object-oriented, since datalab instances are free to use their own custom data models.
 The available schemas are reported as instance metadata and in the future object-oriented models may be able to be genereated directly in the client (so e.g., the returned data would be Python objects like `Sample` rather than JSON data).
 
+The issue tracker here will be used to track development of features, as well as bug reports.
+If you have any suggestions or feedback, please post it there.
+
 ## Installation
 
 The API can be used by installing this repository with `pip`, ideally in a fresh Python environment (created using e.g., conda, virtualenv or other related tools -- if you're not sure about this, ask).
 
 ```shell
-pip install git+https://github.com/ml-evs/datalab-python-api
+pip install git+https://github.com/datalab-industries/datalab-python-api
 ```
 
 ## Usage
@@ -35,7 +38,7 @@ This package implemented some basic functionality for displaying and manipulatin
 from datalab_api import DatalabClient
 
 with DatalabClient("https://api.public.odbx.science", api_key=<MY_API_KEY>) as client:
-    
+
     # List all items of a given type
     items = client.get_items()
 

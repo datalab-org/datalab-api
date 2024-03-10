@@ -1,14 +1,13 @@
-from typing import Optional, Annotated
-from rich.live_render import LiveRender
+import time
+from typing import Annotated, Optional
 
 import typer
-import time
-from rich.pretty import pprint
-from rich.panel import Panel
-from rich.console import Console
-from rich.table import Table
-from rich.live import Live
 from click_shell import make_click_shell
+from rich.console import Console
+from rich.live import Live
+from rich.panel import Panel
+from rich.pretty import pprint
+from rich.table import Table
 
 from datalab_api import DatalabClient
 
@@ -37,11 +36,21 @@ def launch(
     if animate_intro:
         with Live(console=console, auto_refresh=False) as live:
             for frame in animation_intro:
-                live._live_render.set_renderable(Panel(frame, subtitle=app.info.epilog, width=len(app.info.epilog)+6, highlight=False))  # type: ignore
+                live._live_render.set_renderable(
+                    Panel(
+                        frame,
+                        subtitle=app.info.epilog,
+                        width=len(app.info.epilog) + 6,
+                        highlight=False,
+                    )
+                )  # type: ignore
                 console.print(live._live_render.position_cursor())
                 time.sleep(0.05)
 
-    console.print(Panel(animation_intro[-1], subtitle=app.info.epilog, width=len(app.info.epilog)+6), highlight=False)  # type: ignore
+    console.print(
+        Panel(animation_intro[-1], subtitle=app.info.epilog, width=len(app.info.epilog) + 6),
+        highlight=False,
+    )  # type: ignore
     console.print()
 
     if instance_url:
@@ -57,9 +66,9 @@ def _get_client(
 ):
     client = getattr(ctx, "client", None)
     if instance_url is None:
-        instance_url = getattr(ctx, "instance_url", None)
+        instance_url = getattr(ctx, "instance_url", None)  # type: ignore
     if client is None:
-        client = DatalabClient(datalab_api_url=instance_url, api_key=api_key, log_level=log_level)
+        client = DatalabClient(datalab_api_url=instance_url, api_key=api_key, log_level=log_level)  # type: ignore
     ctx.client = client
     ctx.instance_url = client.datalab_api_url
     return ctx.client
@@ -75,7 +84,7 @@ def _get_instance_url(ctx: typer.Context):
 @app.command()
 def authenticate(
     ctx: typer.Context,
-    instance_url: Annotated[str, typer.Argument()] = None,
+    instance_url: Annotated[Optional[str], typer.Argument()] = None,
     api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
@@ -84,6 +93,7 @@ def authenticate(
     console.print(
         f"Welcome [red]{user['display_name']}[/red]!\nSuccessfully authenticated at [blue]{client.datalab_api_url}[/blue]."
     )
+
 
 @app.command()
 def get(
@@ -106,8 +116,18 @@ def get(
     table.add_column("collections")
     table.add_column("creators")
     for item in items[:page_limit]:
-        table.add_row(item["type"][0].upper(), item["item_id"], item["refcode"], item["name"], str(item["nblocks"]), ", ".join(d["collection_id"] for d in item["collections"]), ", ".join(d["display_name"] for d in item["creators"]), end_section=True)
+        table.add_row(
+            item["type"][0].upper(),
+            item["item_id"],
+            item["refcode"],
+            item["name"],
+            str(item["nblocks"]),
+            ", ".join(d["collection_id"] for d in item["collections"]),
+            ", ".join(d["display_name"] for d in item["creators"]),
+            end_section=True,
+        )
     console.print(table)
+
 
 @app.command()
 def info(
