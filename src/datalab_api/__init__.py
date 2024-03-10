@@ -352,7 +352,7 @@ class DatalabClient:
             raise RuntimeError(f"Failed to get block at {block_url}: {block['status']!r}.")
         return block["new_block_data"]
 
-    def upload_file_to_item(self, item_id: str, file_path: Path | str) -> dict[str, Any]:
+    def upload_file(self, item_id: str, file_path: Path | str) -> dict[str, Any]:
         """Upload a file to an item with a given ID.
 
         Parameters:
