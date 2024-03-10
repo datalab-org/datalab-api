@@ -1,9 +1,12 @@
 from typing import Optional, Annotated
+from rich.live_render import LiveRender
 
 import typer
 import time
 from rich.pretty import pprint
+from rich.panel import Panel
 from rich.console import Console
+from rich.table import Table
 from rich.live import Live
 from click_shell import make_click_shell
 
@@ -22,7 +25,7 @@ console = Console()
 def launch(
     ctx: typer.Context,
     instance_url: Annotated[Optional[str], typer.Argument()] = None,
-    animate_intro: bool = False,
+    animate_intro: bool = True,
 ):
     """Makes an interactive REPL-style interface using the subcommands below."""
     shell = make_click_shell(
@@ -30,17 +33,15 @@ def launch(
         prompt="datalab > ",
     )
 
+    animation_intro = _make_fancy_intro()
     if animate_intro:
-        animation_intro = _make_fancy_intro(steps=50)
-        with Live(console=console, screen=True, auto_refresh=False) as live:
+        with Live(console=console, auto_refresh=False) as live:
             for frame in animation_intro:
-                console.print(frame, highlight=False)
-                time.sleep(0.02)
-    else:
-        animation_intro = _make_fancy_intro(steps=1)
-        console.print(animation_intro[-1], highlight=False)
-    console.print()
-    console.print(app.info.epilog, highlight=False)
+                live._live_render.set_renderable(Panel(frame, subtitle=app.info.epilog, width=len(app.info.epilog)+6, highlight=False))  # type: ignore
+                console.print(live._live_render.position_cursor())
+                time.sleep(0.05)
+
+    console.print(Panel(animation_intro[-1], subtitle=app.info.epilog, width=len(app.info.epilog)+6), highlight=False)  # type: ignore
     console.print()
 
     if instance_url:
@@ -74,16 +75,38 @@ def _get_instance_url(ctx: typer.Context):
 @app.command()
 def authenticate(
     ctx: typer.Context,
-    instance_url: Annotated[str, typer.Argument()],
+    instance_url: Annotated[str, typer.Argument()] = None,
     api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
     client = _get_client(ctx, instance_url, api_key, log_level)
     user = client.authenticate()
     console.print(
-        f"Welcome [red]{user['display_name']}[/red]! Successfully authenticated at [blue]{client.datalab_api_url}[/blue]."
+        f"Welcome [red]{user['display_name']}[/red]!\nSuccessfully authenticated at [blue]{client.datalab_api_url}[/blue]."
     )
 
+@app.command()
+def get(
+    ctx: typer.Context,
+    data_type: str,
+    instance_url: Annotated[str, typer.Argument()] = None,
+    page_limit: int = 10,
+    api_key: Optional[str] = None,
+    log_level: str = "WARNING",
+):
+    client = _get_client(ctx, instance_url, api_key, log_level)
+    items = client.get_items(data_type)
+    table = Table(title=f"/{data_type}/", show_lines=True)
+    table.add_column("type", overflow="crop", justify="center")
+    table.add_column("ID", style="cyan", no_wrap=True)
+    table.add_column("refcode", style="magenta", no_wrap=True)
+    table.add_column("name", width=30, overflow="ellipsis", no_wrap=True)
+    table.add_column("nblocks", justify="right")
+    table.add_column("collections")
+    table.add_column("creators")
+    for item in items[:page_limit]:
+        table.add_row(item["type"][0].upper(), item["item_id"], item["refcode"], item["name"], str(item["nblocks"]), ", ".join(d["collection_id"] for d in item["collections"]), ", ".join(d["display_name"] for d in item["creators"]), end_section=True)
+    console.print(table)
 
 @app.command()
 def info(
@@ -94,45 +117,52 @@ def info(
     pprint(client.get_info())
 
 
-def _make_fancy_intro(steps=50):
+def _make_fancy_intro(animate=True):
     """Bit of fun, make an animated datalab logo intro to the CLI."""
     import random
 
     intro_ascii = """
-        oooo              o8              o888             oooo
-     ooooo888    ooooooo o888oo  ooooooo    888   ooooooo    888ooooo
-   888    888    ooooo888 888    ooooo888   888   ooooo888   888    888
-   888    888  888    888 888  888    888   888 888    888   888    888
-     88ooo888o  88ooo88 8o 888o 88ooo88 8o o888o 88ooo88 8o o888ooo88"""
+              oooo              o8              o888             oooo
+           ooooo888    ooooooo o888oo  ooooooo    888   ooooooo    888ooooo
+         888    888    ooooo888 888    ooooo888   888   ooooo888   888    888
+         888    888  888    888 888  888    888   888 888    888   888    888
+           88ooo888o  88ooo88 8o 888o 88ooo88 8o o888o 88ooo88 8o o888ooo88
+    """
 
-    colours = [
-        "medium_purple1",
-        "dark_slate_gray3",
-        "medium_orchid",
-        "dark_red",
-        "dodger_blue3",
-        "turquoise2",
-        "plum4",
+    # Colour themes that should work in both light and dark terminals
+    themes = [
+        ["dark_orange", "salmon1", "light_coral", "pale_violet_red1", "orchid2", "orchid1"],
+        ["dark_orange3", "indian_red", "hot_pink3", "hot_pink2", "orchid"],
+        ["chartreuse4", "pale_turqoise4", "steel_blue", "steel_blue3", "cornflower_blue"],
     ]
-    colours.insert(0, random.choice(colours))
+
+    colours = random.choice(themes)
+    random.shuffle(colours)
+    colours.append("black")
     num_colours = len(colours)
 
-    animation = []
-    step = 0
-    colours_by_index: list[int] = [-1] * len(intro_ascii)
-    while step < steps:
+    animation: list[str] = []
+    colours_by_index: list[int] = [num_colours - 1] * len(intro_ascii)
+    beta_1: float = 0.2
+    beta_2: float = 0.6
+    steps: int = 0
+    max_steps: int = 50
+
+    while max(colours_by_index) != 0:
         intro_fancy = ""
         for ind, char in enumerate(intro_ascii):
-            if char != " ":
-                if random.random() < float(step + 1) / steps:
-                    colours_by_index[ind] = 0
-                elif colours_by_index[ind] == -1:
-                    colours_by_index[ind] = random.randint(0, num_colours - 1)
-                intro_fancy += f"[{colours[colours_by_index[ind]]}]{char}[/]"
-            else:
+            if char == " ":
+                colours_by_index[ind] = 0
                 intro_fancy += " "
+            else:
+                if colours_by_index[ind] != 0 and random.random() < (steps / max_steps) * beta_1:
+                    colours_by_index[ind] = 0
+                elif colours_by_index[ind] != 0 and random.random() < (steps / max_steps) * beta_2:
+                    colours_by_index[ind] = random.randint(1, num_colours - 2)
+                intro_fancy += f"[{colours[colours_by_index[ind]]}]{char}[/]"
+
         animation.append(intro_fancy)
-        step += 1
+        steps += 1
 
     return animation
 
