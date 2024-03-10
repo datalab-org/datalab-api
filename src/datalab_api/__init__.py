@@ -26,6 +26,7 @@ class DatalabClient:
     with DatalabClient("https://public.api.odbx.science", api_key="my-api-key") as client:
         client.get_items()
     ```
+
     """
 
     def __init__(
@@ -200,6 +201,68 @@ class DatalabClient:
             raise RuntimeError(f"Failed to list items at {search_items_url}: {items['status']!r}.")
 
         return items["items"]
+
+    def create_item(self, item_id: str, item_type: str, item_data: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Create an item with a given ID and item data.
+
+        Parameters:
+            item_id: The ID of the item to create.
+            item_type: The type of item to create, e.g., 'samples', 'cells'.
+            item_data: The data for the item.
+
+        """
+        new_item = {}
+        if item_data is not None:
+            new_item = item_data
+        new_item.update(**{"item_id": item_id, "type": item_type})
+
+        with self._http_client(headers=self._headers) as session:
+            create_item_url = f"{self.datalab_api_url}/new-sample/"
+            create_item_resp = session.post(
+                create_item_url,
+                json=new_item,
+                follow_redirects=True,
+                headers=self._headers,
+            )
+        try:
+            created_item = create_item_resp.json()
+            if created_item["status"] != "success":
+                raise RuntimeError(f"Failed to create item at {create_item_url}: {created_item['status']!r}.")
+            return created_item["sample_list_entry"]
+
+        except Exception:
+            raise RuntimeError(
+                f"Failed to create item {item_id=} with data {item_data=} at {create_item_url}: {create_item_resp.status_code=}. Check the item information is correct."
+            )
+
+    def update_item(self, item_id: str, item_data: dict[str, Any]) -> dict[str, Any]:
+        """Update an item with the given item data.
+
+        Parameters:
+            item_id: The ID of the item to update.
+            item_data: The new data for the item.
+
+        Returns:
+            A dictionary of the updated item data.
+
+        """
+        update_item_data = {"item_id": item_id, "data": item_data}
+        with self._http_client(headers=self._headers) as session:
+            update_item_url = f"{self.datalab_api_url}/save-item/"
+            update_item_resp = session.post(
+                update_item_url,
+                json=update_item_data,
+                follow_redirects=True,
+                headers=self._headers,
+            )
+        if update_item_resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to update item {item_id=} at {update_item_url}: {update_item_resp.status_code=}. Check the item information is correct."
+            )
+        updated_item = update_item_resp.json()
+        if updated_item["status"] != "success":
+            raise RuntimeError(f"Failed to update item at {update_item_url}: {updated_item['status']!r}.")
+        return updated_item
 
     def get_item(
         self, item_id: str | None = None, refcode: str | None = None, load_blocks: bool = False
