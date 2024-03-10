@@ -1,11 +1,15 @@
 import os
 from importlib.metadata import version
 from typing import Any
-import httpx
+from pathlib import Path
 import logging
+
+import httpx
 from rich.logging import RichHandler
 
 __version__ = version("datalab-api")
+
+__all__ = ("__version__", "DatalabClient")
 
 BAD_SERVER_VERSIONS = ((0, 2, 0),)
 BAD_API_VERSIONS = ((0, 0, 0),)
@@ -131,25 +135,194 @@ class DatalabClient:
         self._headers["DATALAB-API-KEY"] = self._api_key
 
     def authenticate(self):
-        """Authenticates the client with the Datalab API."""
+        """Tests authentication of the client with the Datalab API."""
         with self._http_client(headers=self._headers) as session:
             user_url = f"{self.datalab_api_url}/get-current-user"
             user_resp = session.get(user_url, follow_redirects=True, headers=self._headers)
         if user_resp.status_code != 200:
-            raise RuntimeError(f"Failed to authenticate to {self.datalab_api_url!r}: {user_resp.status_code=} from {self._headers}. Please check your API key.")
+            raise RuntimeError(
+                f"Failed to authenticate to {self.datalab_api_url!r}: {user_resp.status_code=} from {self._headers}. Please check your API key."
+            )
         return user_resp.json()
 
-    def get_items(self, data_type: str = "samples"):
-        """List items available to the authenticated user."""
+    def get_items(self, item_type: str | None = "samples") -> list[dict[str, Any]]:
+        """List items of the given type available to the authenticated user.
+
+        Parameters:
+            item_type: The type of item to list. Defaults to "samples". Other
+            choices will trigger a call to the `/<item_type>` endpoint of the API.
+
+        Returns:
+            A list of items of the given type.
+
+        """
+        if item_type is None:
+            item_type = "samples"
         with self._http_client(headers=self._headers) as session:
-            items_url = f"{self.datalab_api_url}/{data_type}"
+            items_url = f"{self.datalab_api_url}/{item_type}"
             items_resp = session.get(items_url, follow_redirects=True, headers=self._headers)
         if items_resp.status_code != 200:
-            raise RuntimeError(f"Failed to list items at {self.datalab_api_url!r}: {items_resp.status_code=} from {self._headers}.")
+            raise RuntimeError(
+                f"Failed to list items with {item_type=} at {items_url}: {items_resp.status_code=}. Check the item type is correct."
+            )
         items = items_resp.json()
         if items["status"] != "success":
-            raise RuntimeError(f"Failed to list items at {self.datalab_api_url!r}: {items['status']!r}.")
-        return items["samples"]
+            raise RuntimeError(f"Failed to list items at {items_url}: {items['status']!r}.")
+        return items[item_type]
 
+    def search_items(
+        self, query: str, item_types: list[str] | str = ["samples", "cells"]
+    ) -> list[dict[str, Any]]:
+        """Search for items of the given types that match the query.
 
-__all__ = ("__version__", "DatalabClient")
+        Parameters:
+            query: Free-text query to search for.
+            item_types: The types of items to search for. Defaults to ["samples", "cells"].
+
+        Returns:
+            An ordered list of items of the given types that match the query.
+
+        """
+        if isinstance(item_types, str):
+            item_types = [item_types]
+
+        with self._http_client(headers=self._headers) as session:
+            search_items_url = (
+                f"{self.datalab_api_url}/search-items?query={query}&types={','.join(item_types)}"
+            )
+            items_resp = session.get(search_items_url, follow_redirects=True, headers=self._headers)
+        if items_resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to search items with {item_types=} at {search_items_url}: {items_resp.status_code=}"
+            )
+        items = items_resp.json()
+        if items["status"] != "success":
+            raise RuntimeError(f"Failed to list items at {search_items_url}: {items['status']!r}.")
+
+        return items["items"]
+
+    def get_item(
+        self, item_id: str | None = None, refcode: str | None = None, load_blocks: bool = False
+    ) -> dict[str, Any]:
+        """Get an item with a given ID or refcode.
+
+        Parameters:
+            item_id: The ID of the item to search for.
+            refcode: The refcode of the item to search fork
+            load_blocks: Whether to load the blocks associated with the item.
+
+        Returns:
+            A dictionary of item data for the item with the given ID or refcode.
+
+        """
+
+        if item_id is None and refcode is None:
+            raise ValueError("Must provide one of `item_id` or `refcode`.")
+        if item_id is not None and refcode is not None:
+            raise ValueError("Must provide only one of `item_id` or `refcode`.")
+
+        if refcode is not None:
+            raise NotImplementedError("Searching by `refcode` is not yet implemented.")
+
+        with self._http_client(headers=self._headers) as session:
+            item_url = f"{self.datalab_api_url}/get-item-data/{item_id}"
+            item_resp = session.get(item_url, follow_redirects=True, headers=self._headers)
+
+        if item_resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to find item {item_id=}, {refcode=} {item_url}: {item_resp.status_code=}. Check the item information is correct."
+            )
+
+        item = item_resp.json()
+        if item["status"] != "success":
+            raise RuntimeError(f"Failed to get item at {item_url}: {item['status']!r}.")
+
+        # Filter out any deleted blocks
+        item["item_data"]["blocks_obj"] = {
+            block_id: block
+            for block_id, block in item["item_data"]["blocks_obj"].items()
+            if block_id in item["item_data"]["display_order"]
+        }
+
+        # Make a call to `/update-block` which will parse/create plots and return as JSON
+        if load_blocks:
+            ret_item_id = item["item_data"]["item_id"]
+            for block_id, block in item["item_data"]["blocks_obj"].items():
+                block_data = self.get_block(
+                    item_id=ret_item_id, block_id=block_id, block_data=block
+                )
+                item["item_data"]["blocks_obj"][block_id] = block_data
+
+        return item["item_data"]
+
+    def get_block(self, item_id: str, block_id: str, block_data: dict[str, Any]) -> dict[str, Any]:
+        """Get a block with a given ID and block data.
+        Should be used in conjunction with `get_item` to load an existing block.
+
+        Parameters:
+            item_id: The ID of the item to search for.
+            block_id: The ID of the block to search for.
+            block_data: Any other block data required by the request.
+
+        Returns:
+            A dictionary of block data for the block with the given ID.
+
+        """
+        with self._http_client(headers=self._headers) as session:
+            block_url = f"{self.datalab_api_url}/update-block/"
+            block_request = {
+                "block_data": block_data,
+                "item_id": item_id,
+                "block_id": block_id,
+                "save_to_db": False,
+            }
+            block_resp = session.post(
+                block_url, json=block_request, follow_redirects=True, headers=self._headers
+            )
+        if block_resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to find block {block_id=} for item {item_id=} at {block_url}: {block_resp.status_code=}. Check the block information is correct."
+            )
+
+        block = block_resp.json()
+        if block["status"] != "success":
+            raise RuntimeError(f"Failed to get block at {block_url}: {block['status']!r}.")
+        return block["new_block_data"]
+
+    def upload_file_to_item(self, item_id: str, file_path: Path | str) -> dict[str, Any]:
+        """Upload a file to an item with a given ID.
+
+        Parameters:
+            item_id: The ID of the item to upload the file to.
+            file_path: The path to the file to upload.
+
+        Returns:
+            A dictionary of the uploaded file data.
+
+        """
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not file_path.exists():
+            raise FileNotFoundError(f"File {file_path=} does not exist.")
+
+        with self._http_client(headers=self._headers) as session:
+            upload_url = f"{self.datalab_api_url}/upload-file/"
+            with open(file_path, "rb") as file:
+                files = {"file": (file_path.name, file)}
+                upload_resp = session.post(
+                    upload_url,
+                    files=files,
+                    data={"item_id": item_id, "replace_file": None},
+                    follow_redirects=True,
+                    headers=self._headers,
+                )
+        if upload_resp.status_code != 201:
+            raise RuntimeError(
+                f"Failed to upload file {file_path=} to item {item_id=} at {upload_url}: {upload_resp.status_code=}. Check the file information is correct."
+            )
+
+        upload = upload_resp.json()
+        if upload["status"] != "success":
+            raise RuntimeError(f"Failed to upload file at {upload_url}: {upload['status']!r}.")
+
+        return upload

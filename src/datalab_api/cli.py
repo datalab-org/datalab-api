@@ -88,15 +88,15 @@ def authenticate(
 @app.command()
 def get(
     ctx: typer.Context,
-    data_type: str,
-    instance_url: Annotated[str, typer.Argument()] = None,
+    item_type: str,
+    instance_url: Annotated[Optional[str], typer.Argument()] = None,
     page_limit: int = 10,
     api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
     client = _get_client(ctx, instance_url, api_key, log_level)
-    items = client.get_items(data_type)
-    table = Table(title=f"/{data_type}/", show_lines=True)
+    items = client.get_items(item_type)
+    table = Table(title=f"/{item_type}/", show_lines=True)
     table.add_column("type", overflow="crop", justify="center")
     table.add_column("ID", style="cyan", no_wrap=True)
     table.add_column("refcode", style="magenta", no_wrap=True)
