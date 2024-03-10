@@ -23,17 +23,24 @@ requires-python = ">=3.10"
 dependencies =[
     "httpx ~= 0.27",  # better HTTP requests
     "rich ~= 13.0",   # nicer terminal output
+    "typer ~= 0.9",   # command line interface
+    "click-shell ~= 2.1", # REPL-like interface
     "bokeh ~= 2.4"  # interactive plots from datalab directly
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit ~= 3.0",
+]
+
+[project.scripts]
+datalab = "datalab_api.cli:app"
 
 [project.urls]
 # homepage = "https://github.com/the-grey-group/datalab"
 # repository = "https://github.com/the-grey-group/datalab"
 # documentation = "https://the-datalab.readthedocs.io"
 # changelog = "https://github.com/the-grey-group/datalab/releases"
-
-[tool.setuptools.packages.find]
-namespaces = true
 
 [tool.versioningit.vcs]
 method = "git"
