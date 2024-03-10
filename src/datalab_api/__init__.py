@@ -49,7 +49,7 @@ class DatalabClient:
 
         self._http_client = httpx.Client
         self._headers: dict[str, str] = {}
-        self._headers["User-Agent"] = "Datalab Python API/{__version__}"
+        self._headers["User-Agent"] = f"Datalab Python API/{__version__}"
 
         info_json = self.get_info()
 
@@ -138,6 +138,18 @@ class DatalabClient:
         if user_resp.status_code != 200:
             raise RuntimeError(f"Failed to authenticate to {self.datalab_api_url!r}: {user_resp.status_code=} from {self._headers}. Please check your API key.")
         return user_resp.json()
+
+    def get_items(self, data_type: str = "samples"):
+        """List items available to the authenticated user."""
+        with self._http_client(headers=self._headers) as session:
+            items_url = f"{self.datalab_api_url}/{data_type}"
+            items_resp = session.get(items_url, follow_redirects=True, headers=self._headers)
+        if items_resp.status_code != 200:
+            raise RuntimeError(f"Failed to list items at {self.datalab_api_url!r}: {items_resp.status_code=} from {self._headers}.")
+        items = items_resp.json()
+        if items["status"] != "success":
+            raise RuntimeError(f"Failed to list items at {self.datalab_api_url!r}: {items['status']!r}.")
+        return items["samples"]
 
 
 __all__ = ("__version__", "DatalabClient")
