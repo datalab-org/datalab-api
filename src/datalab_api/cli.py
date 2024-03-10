@@ -94,6 +94,7 @@ def get(
     api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
+    """Get a table of items of the given type."""
     client = _get_client(ctx, instance_url, api_key, log_level)
     items = client.get_items(item_type)
     table = Table(title=f"/{item_type}/", show_lines=True)
