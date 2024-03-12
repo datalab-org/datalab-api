@@ -52,7 +52,13 @@ def launch(
         highlight=False,
     )  # type: ignore
     console.print()
-    console.print(Panel("This CLI is an experimental work in progress and does not expose the full functionality of the underlying DatalabClient.", title="[red]WARNING![/red]", width=len(app.info.epilog) + 6))
+    console.print(
+        Panel(
+            "This CLI is an experimental work in progress and does not expose the full functionality of the underlying DatalabClient.",
+            title="[red]WARNING![/red]",
+            width=len(app.info.epilog) + 6,
+        )
+    )
     console.print()
 
     if instance_url:

@@ -82,12 +82,6 @@ class DatalabClient:
     def headers(self):
         return self._headers
 
-    @headers.setter
-    def set_headers(self, values):
-        """If the desired headers change (e.g., changing API key), then reset the session too."""
-        self._session = None
-        self._headers = values
-
     def get_info(self) -> dict[str, Any]:
         """Fetch metadata associated with this datalab instance.
 
