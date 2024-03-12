@@ -16,6 +16,14 @@ If you have any suggestions or feedback, please post it there.
 The API can be used by installing this repository with `pip`, ideally in a fresh Python environment (created using e.g., conda, virtualenv or other related tools -- if you're not sure about this, ask).
 
 ```shell
+git clone git@github.com:datalab-industries/datalab-python-api
+cd datalab-python-api
+pip install .
+```
+
+or via (may require public release first):
+
+```shell
 pip install git+https://github.com/datalab-industries/datalab-python-api
 ```
 
