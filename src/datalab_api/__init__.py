@@ -149,7 +149,7 @@ class DatalabClient:
 
             if api_key is None:
                 raise ValueError(
-                    f"No API key provided explicitly and no key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
+                    f"No API key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
                 )
 
             self._api_key = api_key
