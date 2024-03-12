@@ -23,23 +23,29 @@ class DatalabClient:
     amenable for use as a context manager, e.g.,
 
     ```python
-    with DatalabClient("https://public.api.odbx.science", api_key="my-api-key") as client:
+    with DatalabClient("https://public.api.odbx.science") as client:
         client.get_items()
     ```
 
     """
 
-    def __init__(
-        self, datalab_api_url: str, api_key: str | None = None, log_level: str = "WARNING"
-    ):
+    _api_key: str | None = None
+    _session: httpx.Client | None = None
+    _headers: dict[str, str] = {}
+
+    def __init__(self, datalab_api_url: str, log_level: str = "WARNING"):
         """Creates an authenticated client.
+
+        An API key is required to authenticate requests. The client will attempt to load it from a series of environment variables,
+        `DATALAB_API_KEY` and prefixed versions for the given requested instance (e.g., `PUBLIC_DATALAB_API_KEY` for the public deployment
+        which has prefix `public`).
 
         Parameters:
             datalab_api_url: The URL of the Datalab API.
                 TODO: If the URL of a datalab *UI* is provided, a request will be made to attempt to resolve the underlying API URL
                 (e.g., `https://public.datalab.odbx.science` will 'redirect' to `https://public.api.odbx.science`).
-            api_key: The API key to authenticate requests. If no key is provided, the client will attempt to load it from a series of environment variables.
             log_level: The logging level to use for the client. Defaults to "WARNING".
+
 
         """
 
@@ -48,12 +54,10 @@ class DatalabClient:
             raise ValueError("No Datalab API URL provided.")
         if not self.datalab_api_url.startswith("http"):
             self.datalab_api_url = f"https://{self.datalab_api_url}"
-        self._api_key = api_key
         logging.basicConfig(level=log_level, handlers=[RichHandler()])
         self.log = logging.getLogger(__name__)
 
         self._http_client = httpx.Client
-        self._headers: dict[str, str] = {}
         self._headers["User-Agent"] = f"Datalab Python API/{__version__}"
 
         info_json = self.get_info()
@@ -66,7 +70,23 @@ class DatalabClient:
             "identifier_prefix"
         )
 
-        self._set_api_key()
+        self._find_api_key()
+
+    @property
+    def session(self) -> httpx.Client:
+        if self._session is None:
+            return self._http_client(headers=self.headers)
+        return self._session
+
+    @property
+    def headers(self):
+        return self._headers
+
+    @headers.setter
+    def set_headers(self, values):
+        """If the desired headers change (e.g., changing API key), then reset the session too."""
+        self._session = None
+        self._headers = values
 
     def get_info(self) -> dict[str, Any]:
         """Fetch metadata associated with this datalab instance.
@@ -75,9 +95,8 @@ class DatalabClient:
             dict: The JSON response from the `/info` endpoint of the Datalab API.
 
         """
-        with self._http_client(headers=self._headers) as session:
-            info_url = f"{self.datalab_api_url}/info"
-            info_resp = session.get(info_url, follow_redirects=True, headers=self._headers)
+        info_url = f"{self.datalab_api_url}/info"
+        info_resp = self.session.get(info_url, follow_redirects=True)
         return info_resp.json()
 
     def _version_negotiation(self):
@@ -102,7 +121,7 @@ class DatalabClient:
             )
 
     @property
-    def api_key(self) -> str | None:
+    def api_key(self) -> str:
         """The API key used to authenticate requests to the Datalab API, passed
         as the `DATALAB-API-KEY` HTTP header.
 
@@ -110,36 +129,54 @@ class DatalabClient:
         endpoint of a Datalab API.
 
         """
-        return self._api_key
-
-    def _set_api_key(self):
-        """If not provided explicitly, attempts to load the API key from environment variables and
-        set the `api_key` attribute."""
-
         if self._api_key is not None:
-            return
+            return self._api_key
+        return self._find_api_key()
 
-        key_env_var = "DATALAB_API_KEY"
-
-        # probe the prefixed environment variable first
-        if self._datalab_instance_prefix is not None:
-            self._api_key = os.getenv(f"{self._datalab_instance_prefix.upper()}_{key_env_var}")
-
+    def _find_api_key(self) -> str:
+        """Checks various environment variables for an API key and sets the value."""
         if self._api_key is None:
-            self._api_key = os.getenv("DATALAB_API_KEY")
+            key_env_var = "DATALAB_API_KEY"
 
-        if self._api_key is None:
-            raise ValueError(
-                f"No API key provided explicitly and no key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
-            )
+            api_key: str | None = None
 
-        self._headers["DATALAB-API-KEY"] = self._api_key
+            # probe the prefixed environment variable first
+            if self._datalab_instance_prefix is not None:
+                api_key = os.getenv(f"{self._datalab_instance_prefix.upper()}_{key_env_var}")
+
+            if api_key is None:
+                api_key = os.getenv("DATALAB_API_KEY")
+
+            if api_key is None:
+                raise ValueError(
+                    f"No API key provided explicitly and no key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
+                )
+
+            self._api_key = api_key
+
+            # Reset session as we are now updating the headers
+            if self._session is not None:
+                try:
+                    self._session.close()
+                except Exception:
+                    pass
+                finally:
+                    self._session = None
+            self._headers["DATALAB-API-KEY"] = self.api_key
+
+        return self.api_key
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        if self._session is not None:
+            self._session.close()
 
     def authenticate(self):
         """Tests authentication of the client with the Datalab API."""
-        with self._http_client(headers=self._headers) as session:
-            user_url = f"{self.datalab_api_url}/get-current-user"
-            user_resp = session.get(user_url, follow_redirects=True, headers=self._headers)
+        user_url = f"{self.datalab_api_url}/get-current-user"
+        user_resp = self.session.get(user_url, follow_redirects=True)
         if user_resp.status_code != 200:
             raise RuntimeError(
                 f"Failed to authenticate to {self.datalab_api_url!r}: {user_resp.status_code=} from {self._headers}. Please check your API key."
@@ -159,9 +196,8 @@ class DatalabClient:
         """
         if item_type is None:
             item_type = "samples"
-        with self._http_client(headers=self._headers) as session:
-            items_url = f"{self.datalab_api_url}/{item_type}"
-            items_resp = session.get(items_url, follow_redirects=True, headers=self._headers)
+        items_url = f"{self.datalab_api_url}/{item_type}"
+        items_resp = self.session.get(items_url, follow_redirects=True)
         if items_resp.status_code != 200:
             raise RuntimeError(
                 f"Failed to list items with {item_type=} at {items_url}: {items_resp.status_code=}. Check the item type is correct."
@@ -187,11 +223,10 @@ class DatalabClient:
         if isinstance(item_types, str):
             item_types = [item_types]
 
-        with self._http_client(headers=self._headers) as session:
-            search_items_url = (
-                f"{self.datalab_api_url}/search-items?query={query}&types={','.join(item_types)}"
-            )
-            items_resp = session.get(search_items_url, follow_redirects=True, headers=self._headers)
+        search_items_url = (
+            f"{self.datalab_api_url}/search-items?query={query}&types={','.join(item_types)}"
+        )
+        items_resp = self.session.get(search_items_url, follow_redirects=True)
         if items_resp.status_code != 200:
             raise RuntimeError(
                 f"Failed to search items with {item_types=} at {search_items_url}: {items_resp.status_code=}"
@@ -218,14 +253,12 @@ class DatalabClient:
             new_item = item_data
         new_item.update(**{"item_id": item_id, "type": item_type})
 
-        with self._http_client(headers=self._headers) as session:
-            create_item_url = f"{self.datalab_api_url}/new-sample/"
-            create_item_resp = session.post(
-                create_item_url,
-                json=new_item,
-                follow_redirects=True,
-                headers=self._headers,
-            )
+        create_item_url = f"{self.datalab_api_url}/new-sample/"
+        create_item_resp = self.session.post(
+            create_item_url,
+            json=new_item,
+            follow_redirects=True,
+        )
         try:
             created_item = create_item_resp.json()
             if created_item["status"] != "success":
@@ -251,14 +284,12 @@ class DatalabClient:
 
         """
         update_item_data = {"item_id": item_id, "data": item_data}
-        with self._http_client(headers=self._headers) as session:
-            update_item_url = f"{self.datalab_api_url}/save-item/"
-            update_item_resp = session.post(
-                update_item_url,
-                json=update_item_data,
-                follow_redirects=True,
-                headers=self._headers,
-            )
+        update_item_url = f"{self.datalab_api_url}/save-item/"
+        update_item_resp = self.session.post(
+            update_item_url,
+            json=update_item_data,
+            follow_redirects=True,
+        )
         if update_item_resp.status_code != 200:
             raise RuntimeError(
                 f"Failed to update item {item_id=} at {update_item_url}: {update_item_resp.status_code=}. Check the item information is correct."
@@ -293,9 +324,8 @@ class DatalabClient:
         if refcode is not None:
             raise NotImplementedError("Searching by `refcode` is not yet implemented.")
 
-        with self._http_client(headers=self._headers) as session:
-            item_url = f"{self.datalab_api_url}/get-item-data/{item_id}"
-            item_resp = session.get(item_url, follow_redirects=True, headers=self._headers)
+        item_url = f"{self.datalab_api_url}/get-item-data/{item_id}"
+        item_resp = self.session.get(item_url, follow_redirects=True)
 
         if item_resp.status_code != 200:
             raise RuntimeError(
@@ -337,17 +367,14 @@ class DatalabClient:
             A dictionary of block data for the block with the given ID.
 
         """
-        with self._http_client(headers=self._headers) as session:
-            block_url = f"{self.datalab_api_url}/update-block/"
-            block_request = {
-                "block_data": block_data,
-                "item_id": item_id,
-                "block_id": block_id,
-                "save_to_db": False,
-            }
-            block_resp = session.post(
-                block_url, json=block_request, follow_redirects=True, headers=self._headers
-            )
+        block_url = f"{self.datalab_api_url}/update-block/"
+        block_request = {
+            "block_data": block_data,
+            "item_id": item_id,
+            "block_id": block_id,
+            "save_to_db": False,
+        }
+        block_resp = self.session.post(block_url, json=block_request, follow_redirects=True)
         if block_resp.status_code != 200:
             raise RuntimeError(
                 f"Failed to find block {block_id=} for item {item_id=} at {block_url}: {block_resp.status_code=}. Check the block information is correct."
@@ -374,17 +401,15 @@ class DatalabClient:
         if not file_path.exists():
             raise FileNotFoundError(f"File {file_path=} does not exist.")
 
-        with self._http_client(headers=self._headers) as session:
-            upload_url = f"{self.datalab_api_url}/upload-file/"
-            with open(file_path, "rb") as file:
-                files = {"file": (file_path.name, file)}
-                upload_resp = session.post(
-                    upload_url,
-                    files=files,
-                    data={"item_id": item_id, "replace_file": None},
-                    follow_redirects=True,
-                    headers=self._headers,
-                )
+        upload_url = f"{self.datalab_api_url}/upload-file/"
+        with open(file_path, "rb") as file:
+            files = {"file": (file_path.name, file)}
+            upload_resp = self.session.post(
+                upload_url,
+                files=files,
+                data={"item_id": item_id, "replace_file": None},
+                follow_redirects=True,
+            )
         if upload_resp.status_code != 201:
             raise RuntimeError(
                 f"Failed to upload file {file_path=} to item {item_id=} at {upload_url}: {upload_resp.status_code=}. Check the file information is correct."
