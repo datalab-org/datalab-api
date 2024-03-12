@@ -26,7 +26,7 @@ pip install git+https://github.com/datalab-industries/datalab-python-api
 Currently the only supported authentication method is via an API key.
 You can generate one for your account for a given datalab instance by visiting the `/get-api-key` endpoint of your chosen instance, or, if using a recent version of datalab, by visiting your account settings in the browser.
 
-This API key can then be passed directly to the API client, or can be set via the environment variable `DATALAB_API_KEY`.
+This API key can be set via the environment variable `DATALAB_API_KEY`.
 To suport the use case of needing to interact with multiple datalab instances, the client will also check prefixed environment variables that use the [`IDENTIFIER_PREFIX` of the chosen datalab instance](https://the-datalab.readthedocs.io/en/latest/config/#mandatory-settings), e.g., `GREY_DATALAB_API_KEY` or `PUBLIC_DATALAB_API_KEY`.
 Only keys that match will be read (e.g., other environment variables starting with `PUBLIC_` will be ignored, when connecting to the [public demo datalab](https://public.datalab.odbx.science).
 
