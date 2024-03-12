@@ -37,7 +37,7 @@ This package implemented some basic functionality for displaying and manipulatin
 ```python
 from datalab_api import DatalabClient
 
-with DatalabClient("https://api.public.odbx.science", api_key=<MY_API_KEY>) as client:
+with DatalabClient("https://api.public.odbx.science") as client:
 
     # List all items of a given type
     items = client.get_items()
@@ -46,7 +46,7 @@ with DatalabClient("https://api.public.odbx.science", api_key=<MY_API_KEY>) as c
     item = client.get_item(item_id="test")
 
     # Upload a file to an item
-    file_response = client.upload_file(path="my_echem_data.mpr", item_id="test")
+    file_response = client.upload_file(filepath="my_echem_data.mpr", item_id="test")
 
 ```
 
