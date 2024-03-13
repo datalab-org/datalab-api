@@ -1,6 +1,6 @@
 import logging
-from importlib.metadata import version
 import os
+from importlib.metadata import version
 from typing import Any
 
 import httpx
@@ -116,7 +116,7 @@ class BaseDatalabClient:
         return self._find_api_key()
 
     def _find_api_key(self) -> str:
-        """Checks various environment variables for an API key and sets the value in the 
+        """Checks various environment variables for an API key and sets the value in the
         session headers.
         """
         if self._api_key is None:
