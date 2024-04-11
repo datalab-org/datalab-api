@@ -1,7 +1,9 @@
 import logging
 import os
+import functools
 from importlib.metadata import version
 from typing import Any
+from rich.pretty import pprint 
 
 import httpx
 from rich.logging import RichHandler
@@ -10,8 +12,44 @@ __version__ = version("datalab-api")
 
 __all__ = ("__version__", "BaseDatalabClient")
 
+def pretty_displayer(method):
 
-class BaseDatalabClient:
+    @functools.wraps(method)
+    def rich_wrapper(self, *args, **kwargs):
+        display = kwargs.pop("display", False)
+        result = method(self, *args, **kwargs)
+        if display:
+            if isinstance(result, dict) and "blocks_obj" in result:
+                blocks: dict[str, dict] = result["blocks_obj"]
+                for block in blocks.values():
+                    if "bokeh_plot_data" in block:
+                        bokeh_from_json(block)
+            pprint(result, max_length=None, max_string=100, max_depth=3)
+
+        return result
+    return rich_wrapper
+
+
+class AutoPrettyPrint(type):
+    def __new__(cls, name, bases, dct):
+        for attr, value in dct.items():
+            if callable(value) and not attr.startswith("__"):
+                dct[attr] = pretty_displayer(value)
+        return super().__new__(cls, name, bases, dct)
+
+
+def bokeh_from_json(block_data):
+    from bokeh.io import curdoc 
+    from bokeh.plotting import show
+    if "bokeh_plot_data" in block_data:
+        bokeh_plot_data = block_data["bokeh_plot_data"]
+    else:
+        bokeh_plot_data = block_data
+    curdoc().replace_with_json(bokeh_plot_data["doc"])
+    show(curdoc().roots[0])
+
+
+class BaseDatalabClient(metaclass=AutoPrettyPrint):
     """A base class that implements some of the shared/logistical functionality
     (hopefully) common to all Datalab clients.
 

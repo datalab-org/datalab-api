@@ -6,6 +6,7 @@ from .base import BaseDatalabClient, __version__
 __all__ = ("__version__", "DatalabClient")
 
 
+
 class DatalabClient(BaseDatalabClient):
     """A client for the Datalab API.
 
@@ -352,5 +353,4 @@ class DatalabClient(BaseDatalabClient):
             raise RuntimeError(f"Failed to update block {block_type=}:\n{resp.text}")
 
         return resp.json()["new_block_data"]
-
 
