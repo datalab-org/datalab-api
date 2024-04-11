@@ -6,10 +6,6 @@ from typing import Any
 import httpx
 from rich.logging import RichHandler
 
-BAD_SERVER_VERSIONS = ((0, 2, 0),)
-BAD_API_VERSIONS = ((0, 0, 0),)
-MIN_API_VERSION = (0, 1, 0)
-
 __version__ = version("datalab-api")
 
 __all__ = ("__version__", "BaseDatalabClient")
@@ -26,6 +22,13 @@ class BaseDatalabClient:
     _api_key: str | None = None
     _session: httpx.Client | None = None
     _headers: dict[str, str] = {}
+
+    bad_server_versions: tuple[tuple[int, int, int]] | None = ((0, 2, 0),)
+    """Any known server versions that are not supported by this client."""
+
+    min_server_version: tuple[int, int, int] = (0, 1, 0)
+    """The minimum supported server version that this client supports."""
+
 
     def __init__(self, datalab_api_url: str, log_level: str = "WARNING"):
         """Creates an authenticated client.
@@ -91,13 +94,13 @@ class BaseDatalabClient:
 
         for available_api_version in sorted(self._datalab_api_versions):
             major, minor, _ = (int(_) for _ in available_api_version.split("."))
-            if major == MIN_API_VERSION[0] and minor == MIN_API_VERSION[1]:
+            if major == self.min_api_version[0] and minor == self.min_api_version[1]:
                 self._selected_api_version = available_api_version
                 break
         else:
             raise RuntimeError(f"No supported API versions found in {self._datalab_api_versions=}")
 
-        if self._datalab_server_version in BAD_SERVER_VERSIONS:
+        if self._datalab_server_version in self.bad_server_versions:
             raise RuntimeError(
                 f"Server version {self._datalab_server_version} is not supported by this client."
             )
