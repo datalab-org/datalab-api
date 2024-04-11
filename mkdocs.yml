@@ -1,0 +1,100 @@
+site_name: datalab-python-api
+site_description: Documentation for the datalab Python API
+site_url: https://the-datalab-python-api.readthedocs.io
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  language: en
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: amber
+      accent: brown
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+      primary: amber
+      accent: brown
+
+  font:
+    text: Figtree
+    code: Iosevka Web
+    features:
+      - content.code.copy
+
+repo_name: datalab-org/datalab-python-api
+repo_url: https://github.com/datalab-org/datalab-python-api
+
+docs_dir: "./docs"
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/the-grey-group
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      # Allows mermaid code blocks to be rendered via mermaid.js
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+
+extra_css:
+  - css/reference.css
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_root_full_path: true
+            show_object_full_path: false
+            show_category_heading: false
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            show_source: true
+            show_bases: true
+            group_by_category: true
+            heading_level: 2
+            members_order: "source"
+            members: true
+            inherited_members: true
+            docstring_style: google
+            enable_inventory: true
+            filters:
+              - "!^_[^_]"
+              - "!__json_encoder__$"
+              - "!__all__$"
+              - "!__config__$"
+              - "!^Config$"
+  - awesome-pages
+  - autorefs
+  - search:
+      lang: en
+
+watch:
+  - src
