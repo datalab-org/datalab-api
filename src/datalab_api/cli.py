@@ -135,9 +135,7 @@ def get(
 
 
 @app.command()
-def info(
-    ctx: typer.Context, instance_url: str, log_level: str = "WARNING"
-):
+def info(ctx: typer.Context, instance_url: str, log_level: str = "WARNING"):
     """Print the server info."""
     client = _get_client(ctx, instance_url, log_level)
     pprint(client.get_info())

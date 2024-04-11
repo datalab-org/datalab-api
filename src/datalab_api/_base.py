@@ -1,19 +1,19 @@
+import functools
 import logging
 import os
-import functools
 from importlib.metadata import version
 from typing import Any
-from rich.pretty import pprint 
 
 import httpx
 from rich.logging import RichHandler
+from rich.pretty import pprint
 
 __version__ = version("datalab-api")
 
 __all__ = ("__version__", "BaseDatalabClient")
 
-def pretty_displayer(method):
 
+def pretty_displayer(method):
     @functools.wraps(method)
     def rich_wrapper(self, *args, **kwargs):
         display = kwargs.pop("display", False)
@@ -27,6 +27,7 @@ def pretty_displayer(method):
             pprint(result, max_length=None, max_string=100, max_depth=3)
 
         return result
+
     return rich_wrapper
 
 
@@ -39,8 +40,9 @@ class AutoPrettyPrint(type):
 
 
 def bokeh_from_json(block_data):
-    from bokeh.io import curdoc 
+    from bokeh.io import curdoc
     from bokeh.plotting import show
+
     if "bokeh_plot_data" in block_data:
         bokeh_plot_data = block_data["bokeh_plot_data"]
     else:
@@ -66,7 +68,6 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
 
     min_server_version: tuple[int, int, int] = (0, 1, 0)
     """The minimum supported server version that this client supports."""
-
 
     def __init__(self, datalab_api_url: str, log_level: str = "WARNING"):
         """Creates an authenticated client.
