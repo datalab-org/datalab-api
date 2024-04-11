@@ -69,14 +69,13 @@ def launch(
 def _get_client(
     ctx: typer.Context,
     instance_url: Optional[str] = None,
-    api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
     client = getattr(ctx, "client", None)
     if instance_url is None:
         instance_url = getattr(ctx, "instance_url", None)  # type: ignore
     if client is None:
-        client = DatalabClient(datalab_api_url=instance_url, api_key=api_key, log_level=log_level)  # type: ignore
+        client = DatalabClient(datalab_api_url=instance_url, log_level=log_level)  # type: ignore
     ctx.client = client
     ctx.instance_url = client.datalab_api_url
     return ctx.client
@@ -93,10 +92,9 @@ def _get_instance_url(ctx: typer.Context):
 def authenticate(
     ctx: typer.Context,
     instance_url: Annotated[Optional[str], typer.Argument()] = None,
-    api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
-    client = _get_client(ctx, instance_url, api_key, log_level)
+    client = _get_client(ctx, instance_url, log_level)
     user = client.authenticate()
     console.print(
         f"Welcome [red]{user['display_name']}[/red]!\nSuccessfully authenticated at [blue]{client.datalab_api_url}[/blue]."
@@ -109,11 +107,10 @@ def get(
     item_type: str,
     instance_url: Annotated[Optional[str], typer.Argument()] = None,
     page_limit: int = 10,
-    api_key: Optional[str] = None,
     log_level: str = "WARNING",
 ):
     """Get a table of items of the given type."""
-    client = _get_client(ctx, instance_url, api_key, log_level)
+    client = _get_client(ctx, instance_url, log_level)
     items = client.get_items(item_type)
     table = Table(title=f"/{item_type}/", show_lines=True)
     table.add_column("type", overflow="crop", justify="center")
@@ -139,10 +136,10 @@ def get(
 
 @app.command()
 def info(
-    ctx: typer.Context, instance_url: str, api_key: Optional[str] = None, log_level: str = "WARNING"
+    ctx: typer.Context, instance_url: str, log_level: str = "WARNING"
 ):
     """Print the server info."""
-    client = _get_client(ctx, instance_url, api_key, log_level)
+    client = _get_client(ctx, instance_url, log_level)
     pprint(client.get_info())
 
 
