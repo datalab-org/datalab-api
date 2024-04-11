@@ -278,7 +278,13 @@ class DatalabClient(BaseDatalabClient):
 
         return upload
 
-    def create_data_block(self, item_id: str, block_type: str, file_ids: str | list[str] | None = None, file_paths: Path | list[Path] | None = None) -> dict[str, Any]:
+    def create_data_block(
+        self,
+        item_id: str,
+        block_type: str,
+        file_ids: str | list[str] | None = None,
+        file_paths: Path | list[Path] | None = None,
+    ) -> dict[str, Any]:
         """Creates a data block for an item with the given block type and file ID.
 
         Parameters:
@@ -286,7 +292,7 @@ class DatalabClient(BaseDatalabClient):
             block_type: The type of block to create.
             file_ids: The ID of the file to attach to the block, must already
                 be uploaded to the item.
-            file_paths: A path, or set of paths, to files to upload and attach to the 
+            file_paths: A path, or set of paths, to files to upload and attach to the
                 item. Conflicts with `file_id`, only one can be provided.
 
         Returns:
@@ -304,7 +310,9 @@ class DatalabClient(BaseDatalabClient):
         }
 
         if file_paths:
-            raise NotImplementedError("Simultaneously uploading files and creating blocks is not yet supported.")
+            raise NotImplementedError(
+                "Simultaneously uploading files and creating blocks is not yet supported."
+            )
 
         if file_ids:
             if isinstance(file_ids, str):
@@ -319,24 +327,30 @@ class DatalabClient(BaseDatalabClient):
 
         block_resp = self.session.post(blocks_url, json=payload, follow_redirects=True)
         if block_resp.status_code != 200:
-            raise RuntimeError(f"Failed to create block {block_type=} for item {item_id=}:\n{block_resp.text}")
+            raise RuntimeError(
+                f"Failed to create block {block_type=} for item {item_id=}:\n{block_resp.text}"
+            )
         block_data = block_resp.json()["new_block_obj"]
-        block_id = block_data["block_id"]
 
         if file_ids:
-            block_data = self._update_data_block(block_type=block_type, block_data=block_data, file_ids=file_ids)
+            block_data = self._update_data_block(
+                block_type=block_type, block_data=block_data, file_ids=file_ids
+            )
 
         return block_data
 
-
-    def _update_data_block(self, block_type: str, block_data: dict, file_ids: str | list[str] | None = None) -> dict[str, Any]:
+    def _update_data_block(
+        self, block_type: str, block_data: dict, file_ids: str | list[str] | None = None
+    ) -> dict[str, Any]:
         """Attaches files to blocks: should only be used via wrapper methods."""
         if file_ids and isinstance(file_ids, str):
             file_ids = [file_ids]
 
         if file_ids:
             if len(file_ids) > 1:
-                raise RuntimeError("API does not currently support attaching multiple files in a block.")
+                raise RuntimeError(
+                    "API does not currently support attaching multiple files in a block."
+                )
 
             block_data["file_id"] = file_ids[0]
 
@@ -352,5 +366,3 @@ class DatalabClient(BaseDatalabClient):
             raise RuntimeError(f"Failed to update block {block_type=}:\n{resp.text}")
 
         return resp.json()["new_block_data"]
-
-
