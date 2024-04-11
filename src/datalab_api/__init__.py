@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from .base import BaseDatalabClient, __version__
+from ._base import BaseDatalabClient, __version__
 
 __all__ = ("__version__", "DatalabClient")
 
