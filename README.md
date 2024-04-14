@@ -1,12 +1,12 @@
 # <div align="center"><i>datalab</i> Python API</div>
 
 <div align="center">
-<a href="https://datalab-python-api.readthedocs.io/en/latest/?badge=stable">
+<a href="https://datalab-python-api.readthedocs.io/en/stable/?badge=stable">
 <img src="https://readthedocs.org/projects/datalab-python-api/badge/?version=stable"></img>
 </a>
 </div>
 
-A simple Python API that can interact with [datalab](https://github.com/the-grey-group/datalab) instances.
+A simple Python API that can interact with [*datalab*](https://github.com/the-grey-group/datalab) instances.
 
 The idea here is to provide a set of utility functions and models for manipulating samples, cells, inventory, files, users and metadata associated with *datalab* entries in an automated way.
 
@@ -19,26 +19,28 @@ If you have any suggestions or feedback, please post it there.
 
 ## Installation
 
-The API can be used by installing this repository with `pip`, ideally in a fresh Python environment (created using e.g., conda, virtualenv or other related tools -- if you're not sure about this, ask).
+The API can be used by installing this repository with `pip`, ideally in a fresh Python 3.9+ environment (created using e.g., conda, virtualenv or other related tools -- if you're not sure about this, ask).
+
+Either from PyPI, for the latest released version:
 
 ```shell
-git clone git@github.com:datalab-org/datalab-python-api
-cd datalab-python-api
-pip install .
+pip install datalab-api
 ```
 
-or via (may require public release first):
+or for the latest development version from GitHub:
 
 ```shell
-pip install git+https://github.com/datalab-org/datalab-python-api
+git clone git@github.com:datalab-org/datalab-api
+cd datalab-api
+pip install .
 ```
 
 ## Usage
 
 Example usage as a Jupyter notebook can be found in the `examples` directory or
-in the [online documentation](https://datalab-python-api.readthedocs.io/), as
+in the [online documentation](https://datalab-api.readthedocs.io/), as
 well as the full [API
-documentation](https://datalab-python-api.readthedocs.io/en/latest/reference/).
+documentation](https://datalab-api.readthedocs.io/en/latest/reference/).
 
 ### Authentication
 

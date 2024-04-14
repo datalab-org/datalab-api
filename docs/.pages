@@ -1,3 +1,5 @@
 nav:
     - index.md
     - reference.md
+    - "Example notebook": examples/client_example.ipynb
+    - changelog.md

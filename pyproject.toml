@@ -37,7 +37,8 @@ docs = [
     "mkdocs",
     "mkdocs-material",
     "mkdocstrings[python-legacy]",
-    "mkdocs-awesome-pages-plugin"
+    "mkdocs-awesome-pages-plugin",
+    "mkdocs-jupyter",
 ]
 
 cli = [

@@ -1,6 +1,6 @@
-site_name: datalab-python-api
+site_name: datalab-api
 site_description: Documentation for the datalab Python API
-site_url: https://the-datalab-python-api.readthedocs.io
+site_url: https://datalab-api.readthedocs.io
 
 theme:
   name: material
@@ -32,8 +32,8 @@ theme:
     features:
       - content.code.copy
 
-repo_name: datalab-org/datalab-python-api
-repo_url: https://github.com/datalab-org/datalab-python-api
+repo_name: datalab-org/datalab-api
+repo_url: https://github.com/datalab-org/datalab-api
 
 docs_dir: "./docs"
 
@@ -95,6 +95,10 @@ plugins:
   - autorefs
   - search:
       lang: en
+  - mkdocs-jupyter:
+      execute: false
+      allow_errors: false
+      include_requirejs: true
 
 watch:
   - src
