@@ -1,9 +1,9 @@
 # <div align="center"><i>datalab</i> Python API</div>
 
 <div align="center">
-
-[![Documentation Status](https://readthedocs.org/projects/datalab-python-api/badge/?version=latest)](https://datalab-python-api.readthedocs.io/en/latest/?badge=latest)
-
+<a href="https://datalab-python-api.readthedocs.io/en/latest/?badge=stable">
+<img src="https://readthedocs.org/projects/datalab-python-api/badge/?version=stable"></img>
+</a>
 </div>
 
 A simple Python API that can interact with [datalab](https://github.com/the-grey-group/datalab) instances.
