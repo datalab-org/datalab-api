@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 from ._base import BaseDatalabClient, __version__
 
@@ -40,7 +40,7 @@ class DatalabClient(BaseDatalabClient):
             )
         return user_resp.json()
 
-    def get_items(self, item_type: str | None = "samples") -> list[dict[str, Any]]:
+    def get_items(self, item_type: Optional[str] = "samples") -> list[dict[str, Any]]:
         """List items of the given type available to the authenticated user.
 
         Parameters:
@@ -65,7 +65,7 @@ class DatalabClient(BaseDatalabClient):
         return items[item_type]
 
     def search_items(
-        self, query: str, item_types: list[str] | str = ["samples", "cells"]
+        self, query: str, item_types: Union[list[str], str] = ["samples", "cells"]
     ) -> list[dict[str, Any]]:
         """Search for items of the given types that match the query.
 
@@ -95,7 +95,7 @@ class DatalabClient(BaseDatalabClient):
         return items["items"]
 
     def create_item(
-        self, item_id: str, item_type: str, item_data: dict[str, Any] | None = None
+        self, item_id: str, item_type: str, item_data: Optional[dict[str, Any]] = None
     ) -> dict[str, Any]:
         """Create an item with a given ID and item data.
 
@@ -159,7 +159,10 @@ class DatalabClient(BaseDatalabClient):
         return updated_item
 
     def get_item(
-        self, item_id: str | None = None, refcode: str | None = None, load_blocks: bool = False
+        self,
+        item_id: Optional[str] = None,
+        refcode: Optional[str] = None,
+        load_blocks: bool = False,
     ) -> dict[str, Any]:
         """Get an item with a given ID or refcode.
 
@@ -242,7 +245,7 @@ class DatalabClient(BaseDatalabClient):
             raise RuntimeError(f"Failed to get block at {block_url}: {block['status']!r}.")
         return block["new_block_data"]
 
-    def upload_file(self, item_id: str, file_path: Path | str) -> dict[str, Any]:
+    def upload_file(self, item_id: str, file_path: Union[Path, str]) -> dict[str, Any]:
         """Upload a file to an item with a given ID.
 
         Parameters:
@@ -282,8 +285,8 @@ class DatalabClient(BaseDatalabClient):
         self,
         item_id: str,
         block_type: str,
-        file_ids: str | list[str] | None = None,
-        file_paths: Path | list[Path] | None = None,
+        file_ids: Optional[Union[str, list[str]]] = None,
+        file_paths: Optional[Union[Path, list[Path]]] = None,
     ) -> dict[str, Any]:
         """Creates a data block for an item with the given block type and file ID.
 
@@ -340,7 +343,7 @@ class DatalabClient(BaseDatalabClient):
         return block_data
 
     def _update_data_block(
-        self, block_type: str, block_data: dict, file_ids: str | list[str] | None = None
+        self, block_type: str, block_data: dict, file_ids: Optional[Union[str, list[str]]] = None
     ) -> dict[str, Any]:
         """Attaches files to blocks: should only be used via wrapper methods."""
         if file_ids and isinstance(file_ids, str):

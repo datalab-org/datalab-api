@@ -10,6 +10,7 @@ license = { text = "MIT" }
 authors = [{ name = "Matthew Evans", email = "matthew@ml-evs.science" }]
 dynamic = ["version"]
 classifiers = [
+    "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -19,7 +20,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies =[
     "httpx ~= 0.27", # better HTTP requests
     "bokeh ~= 2.4",  # interactive plots from datalab directly

@@ -2,7 +2,7 @@ import functools
 import logging
 import os
 from importlib.metadata import version
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 from rich.logging import RichHandler
@@ -59,11 +59,11 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     readable by users.
     """
 
-    _api_key: str | None = None
-    _session: httpx.Client | None = None
+    _api_key: Optional[str] = None
+    _session: Optional[httpx.Client] = None
     _headers: dict[str, str] = {}
 
-    bad_server_versions: tuple[tuple[int, int, int]] | None = ((0, 2, 0),)
+    bad_server_versions: Optional[tuple[tuple[int, int, int]]] = ((0, 2, 0),)
     """Any known server versions that are not supported by this client."""
 
     min_server_version: tuple[int, int, int] = (0, 1, 0)
@@ -104,7 +104,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             "available_api_versions"
         ]
         self._datalab_server_version: str = info_json["data"]["attributes"]["server_version"]
-        self._datalab_instance_prefix: str | None = info_json["data"]["attributes"].get(
+        self._datalab_instance_prefix: Optional[str] = info_json["data"]["attributes"].get(
             "identifier_prefix"
         )
 
@@ -164,7 +164,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         if self._api_key is None:
             key_env_var = "DATALAB_API_KEY"
 
-            api_key: str | None = None
+            api_key: Optional[str] = None
 
             # probe the prefixed environment variable first
             if self._datalab_instance_prefix is not None:
