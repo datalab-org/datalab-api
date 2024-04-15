@@ -1,5 +1,25 @@
 # Changelog
 
+## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.1...HEAD)
+
+**Implemented enhancements:**
+
+- Strip quotes from API keys to avoid confusing errors [\#14](https://github.com/datalab-org/datalab-api/issues/14)
+
+## [v0.2.1](https://github.com/datalab-org/datalab-api/tree/v0.2.1) (2024-04-15)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.0...v0.2.1)
+
+**Closed issues:**
+
+- Fix PyPI publisher auth [\#12](https://github.com/datalab-org/datalab-api/issues/12)
+
+**Merged pull requests:**
+
+- Strip quotes from API keys when present [\#15](https://github.com/datalab-org/datalab-api/pull/15) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.0](https://github.com/datalab-org/datalab-api/tree/v0.2.0) (2024-04-14)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.1.0...v0.2.0)
