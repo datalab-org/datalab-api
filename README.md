@@ -1,8 +1,21 @@
 # <div align="center"><i>datalab</i> Python API</div>
 
 <div align="center">
+<a href="https://pypi.org/datalab-api">
+<img
+src="https://img.shields.io/pypi/v/datalab-api?logo=pypi&label=PyPI%3A&labelColor=white&color=grey">
+</a>
+<a href="https://github.com/datalab-org/datalab-api?tab=MIT-1-ov-file#MIT-1-ov-file">
+<img
+src="https://img.shields.io/github/license/datalab-org/datalab-api?labelColor=white&color=grey">
+</a>
+</div>
+<div align="center">
 <a href="https://datalab-python-api.readthedocs.io/en/stable/?badge=stable">
-<img src="https://readthedocs.org/projects/datalab-python-api/badge/?version=stable"></img>
+<img src="https://img.shields.io/readthedocs/datalab-python-api?logo=readthedocs&labelColor=white&color=grey">
+</a>
+<a href="https://pypi.org/datalab-api">
+<img src="https://img.shields.io/pypi/pyversions/datalab-api?logo=python&label=Python%20versions&labelColor=white&color=grey">
 </a>
 </div>
 
