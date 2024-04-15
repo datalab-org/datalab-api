@@ -173,6 +173,10 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             if api_key is None:
                 api_key = os.getenv("DATALAB_API_KEY")
 
+            # Remove single and double quotes around API key if present
+            if api_key is not None:
+                api_key = api_key.strip("'").strip('"')
+
             if api_key is None:
                 raise ValueError(
                     f"No API key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
