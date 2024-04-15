@@ -56,6 +56,9 @@ jobs:
         force: true
         tags: true
 
+    - name: Get tagged versions
+      run: echo "PREVIOUS_VERSION=$(git tag -l --sort -version:refname | sed -n 2p)" >> $GITHUB_ENV
+
     - name: Create release-specific changelog
       uses: CharMixer/auto-changelog-action@v1
       with:
