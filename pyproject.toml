@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "datalab-api"
 readme = "README.md"
+description = "A Python API for instances of the datalab data management platform (https://github.com/the-grey-group/datalab)."
 keywords = []
 license = { text = "MIT" }
 authors = [{ name = "Matthew Evans", email = "matthew@ml-evs.science" }]
