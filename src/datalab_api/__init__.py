@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -213,6 +214,26 @@ class DatalabClient(BaseDatalabClient):
                 item["item_data"]["blocks_obj"][block_id] = block_data
 
         return item["item_data"]
+
+    def get_item_files(self, item_id: str) -> None:
+        """Download all the files for a given item and save them locally
+        in the current working directory.
+
+        Parameters:
+            item_id: The ID of the item to search for.
+
+        """
+
+        item_data = self.get_item(item_id)
+        for f in item_data.get("files", []):
+            file_location = f["location"]
+            url = file_location.replace("/app", self.datalab_api_url)
+            if Path(f["name"]).exists():
+                warnings.warn(f"Will not overwrite existing file {f['name']}")
+                continue
+            with open(f["name"], "wb") as file:
+                response = self.session.get(url, follow_redirects=True)
+                file.write(response.content)
 
     def get_block(self, item_id: str, block_id: str, block_data: dict[str, Any]) -> dict[str, Any]:
         """Get a block with a given ID and block data.
