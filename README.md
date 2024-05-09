@@ -62,7 +62,7 @@ This package implements basic functionality for displaying and manipulating entr
 ```python
 from datalab_api import DatalabClient
 
-with DatalabClient("https://api.public.odbx.science") as client:
+with DatalabClient("https://public.api.odbx.science") as client:
 
     # List all items of a given type
     items = client.get_items()
