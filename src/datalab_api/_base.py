@@ -1,6 +1,8 @@
 import functools
 import logging
 import os
+import re
+import warnings
 from importlib.metadata import version
 from typing import Any, Optional
 
@@ -98,6 +100,8 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         self._http_client = httpx.Client
         self._headers["User-Agent"] = f"Datalab Python API/{__version__}"
 
+        self._detect_api_url()
+
         info_json = self.get_info()
 
         self._datalab_api_versions: list[str] = info_json["data"]["attributes"][
@@ -109,6 +113,27 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         )
 
         self._find_api_key()
+
+    def _detect_api_url(self) -> None:
+        """Perform a handshake with the chosen URL to ascertain the correct API URL.
+
+        If a datalab UI URL is passed, the client will attempt to resolve the API URL by
+        inspecting the HTML meta tags.
+
+        Do not use the session for this, so we are not passing the API key to arbitrary URLs.
+
+        """
+        response = httpx.get(self.datalab_api_url)
+        match = re.search(
+            r'<meta name="x_datalab_api_url" content="(.*?)"\s*/>',
+            response.text,
+            re.IGNORECASE,
+        )
+        if match:
+            self.datalab_api_url = match.group(1)
+            warnings.warn(
+                f"Found API URL {self.datalab_api_url} in HTML meta tag. Creating client with this URL instead."
+            )
 
     def get_info(self) -> dict[str, Any]:
         raise NotImplementedError
