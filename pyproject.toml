@@ -32,6 +32,9 @@ dependencies =[
 [project.optional-dependencies]
 dev = [
     "pre-commit ~= 3.0",
+    "pytest ~= 8.0",
+    "pytest-cov ~= 5.0",
+    "respx ~= 0.21",
 ]
 
 docs = [
@@ -47,14 +50,18 @@ cli = [
     "click-shell ~= 2.1", # REPL-like interface
 ]
 
+all = [
+    "datalab-api[dev,docs,cli]"
+]
+
 [project.scripts]
 datalab = "datalab_api.cli:app"
 
 [project.urls]
-# homepage = "https://github.com/the-grey-group/datalab"
-# repository = "https://github.com/the-grey-group/datalab"
-# documentation = "https://the-datalab.readthedocs.io"
-# changelog = "https://github.com/the-grey-group/datalab/releases"
+homepage = "https://github.com/datalab-org/datalab-api"
+repository = "https://github.com/datalab-org/datalab-api"
+documentation = "https://datalab-python-api.readthedocs.io"
+changelog = "https://github.com/datalab-org/datalab-api/releases"
 
 [tool.versioningit.vcs]
 method = "git"
