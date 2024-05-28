@@ -2,15 +2,39 @@
 
 ## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
 
-[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.1...HEAD)
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.2...HEAD)
+
+**Closed issues:**
+
+- Incorporate examples from hackathon into example notebook [\#20](https://github.com/datalab-org/datalab-api/issues/20)
+
+## [v0.2.2](https://github.com/datalab-org/datalab-api/tree/v0.2.2) (2024-05-28)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.1...v0.2.2)
 
 **Implemented enhancements:**
 
-- Strip quotes from API keys to avoid confusing errors [\#14](https://github.com/datalab-org/datalab-api/issues/14)
+- Neatly redirect to correct API URL when provided with UI URL [\#21](https://github.com/datalab-org/datalab-api/issues/21)
+- Add tests [\#2](https://github.com/datalab-org/datalab-api/issues/2)
+
+**Closed issues:**
+
+- Confusion around instance\_url and api\_key when not passed at start, help strings are messed up and the app context does not store user info properly [\#4](https://github.com/datalab-org/datalab-api/issues/4)
+
+**Merged pull requests:**
+
+- Testing and CI setup [\#23](https://github.com/datalab-org/datalab-api/pull/23) ([ml-evs](https://github.com/ml-evs))
+- Incorporate examples from hackathon into example notebook [\#22](https://github.com/datalab-org/datalab-api/pull/22) ([BenjaminCharmes](https://github.com/BenjaminCharmes))
+- Updates from hackathon [\#19](https://github.com/datalab-org/datalab-api/pull/19) ([ml-evs](https://github.com/ml-evs))
+- Add package description for PyPI [\#18](https://github.com/datalab-org/datalab-api/pull/18) ([ml-evs](https://github.com/ml-evs))
 
 ## [v0.2.1](https://github.com/datalab-org/datalab-api/tree/v0.2.1) (2024-04-15)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.0...v0.2.1)
+
+**Implemented enhancements:**
+
+- Strip quotes from API keys to avoid confusing errors [\#14](https://github.com/datalab-org/datalab-api/issues/14)
 
 **Closed issues:**
 
