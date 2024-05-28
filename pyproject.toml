@@ -58,10 +58,10 @@ all = [
 datalab = "datalab_api.cli:app"
 
 [project.urls]
-# homepage = "https://github.com/the-grey-group/datalab"
-# repository = "https://github.com/the-grey-group/datalab"
-# documentation = "https://the-datalab.readthedocs.io"
-# changelog = "https://github.com/the-grey-group/datalab/releases"
+homepage = "https://github.com/datalab-org/datalab-api"
+repository = "https://github.com/datalab-org/datalab-api"
+documentation = "https://datalab-python-api.readthedocs.io"
+changelog = "https://github.com/datalab-org/datalab-api/releases"
 
 [tool.versioningit.vcs]
 method = "git"
