@@ -125,7 +125,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         """
         response = httpx.get(self.datalab_api_url)
         match = re.search(
-            r'<meta name="x_datalab_api_url" content="(.*?)"\s*/>',
+            r'<meta name="x_datalab_api_url" content="(.*?)">',
             response.text,
             re.IGNORECASE,
         )
