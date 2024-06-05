@@ -1,5 +1,5 @@
-site_name: datalab-api
-site_description: Documentation for the datalab Python API
+site_name: datalab Python API
+site_description: Documentation for the *datalab* Python API
 site_url: https://datalab-api.readthedocs.io
 
 theme:
@@ -25,10 +25,10 @@ theme:
         name: Switch to light mode
       primary: amber
       accent: brown
+  custom_dir: docs/overrides
 
   font:
     text: Figtree
-    code: Iosevka Web
     features:
       - content.code.copy
 
@@ -40,7 +40,7 @@ docs_dir: "./docs"
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/the-grey-group
+      link: https://github.com/datalab-org
 
 markdown_extensions:
   - admonition
@@ -99,6 +99,9 @@ plugins:
       execute: false
       allow_errors: false
       include_requirejs: true
+      include_source: true
+  #- privacy:
+  #    enabled: true
 
 watch:
   - src

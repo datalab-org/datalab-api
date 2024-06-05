@@ -1,0 +1,32 @@
+div.doc-contents:not(.first) {
+    padding-left: 25px;
+    border-left: 4px solid rgba(230, 230, 230, 0.5);
+    margin-bottom: 80px;
+}
+
+.jupyter-wrapper {
+    --jp-code-font-family-default: 'Iosevka Web', monospace;
+}
+
+pre {
+    font-family: 'Iosevka Web', monospace;
+}
+
+td code {
+    word-break: normal !important;
+}
+
+code {
+    max-height: 20em;
+}
+
+.md-grid {
+    max-width: 70rem;
+}
+
+:root {
+    --md-text-font: "Figtree", sans-serif;
+    --md-code-font: "Iosevka Web", monospace;
+    --jp-code-font-family-default: 'Iosevka Web', monospace;
+    --jp-code-font-family: 'Iosevka Web', monospace;
+}

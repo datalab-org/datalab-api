@@ -1,0 +1,21 @@
+{% extends  "base.html" %}
+
+{% block extrahead %}
+<link href="https://pvinis.github.io/iosevka-webfont/3.4.1/iosevka.css" rel="stylesheet" />
+
+<style>
+:root {
+    --jp-code-font-family-default: 'Iosevka Web', monospace;
+    --md-text-font: "Figtree", sans-serif;
+    --md-code-font: "Iosevka Web", monospace;
+    --jp-code-font-family-default: 'Iosevka Web', monospace;
+    --jp-code-font-family: 'Iosevka Web', monospace;
+}
+
+.jp-OutputArea-output pre {
+    font-family: 'Iosevka Web', monospace !important;
+    font-size: 0.8em;
+}
+
+</style>
+{% endblock %}
