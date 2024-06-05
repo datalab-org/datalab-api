@@ -1,12 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+## [v0.2.3](https://github.com/datalab-org/datalab-api/tree/v0.2.3) (2024-06-05)
 
-[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.2...HEAD)
-
-**Closed issues:**
-
-- Incorporate examples from hackathon into example notebook [\#20](https://github.com/datalab-org/datalab-api/issues/20)
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.2...v0.2.3)
 
 ## [v0.2.2](https://github.com/datalab-org/datalab-api/tree/v0.2.2) (2024-05-28)
 
@@ -19,6 +15,7 @@
 
 **Closed issues:**
 
+- Incorporate examples from hackathon into example notebook [\#20](https://github.com/datalab-org/datalab-api/issues/20)
 - Confusion around instance\_url and api\_key when not passed at start, help strings are messed up and the app context does not store user info properly [\#4](https://github.com/datalab-org/datalab-api/issues/4)
 
 **Merged pull requests:**
