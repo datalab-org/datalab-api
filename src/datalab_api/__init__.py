@@ -102,7 +102,11 @@ class DatalabClient(BaseDatalabClient):
         return items["items"]
 
     def create_item(
-        self, item_id: str, item_type: str, item_data: Optional[dict[str, Any]] = None
+        self,
+        item_id: str,
+        item_type: str,
+        item_data: Optional[dict[str, Any]] = None,
+        collection_id: Optional[str] = None,
     ) -> dict[str, Any]:
         """Create an item with a given ID and item data.
 
@@ -110,12 +114,22 @@ class DatalabClient(BaseDatalabClient):
             item_id: The ID of the item to create.
             item_type: The type of item to create, e.g., 'samples', 'cells'.
             item_data: The data for the item.
+            collection_id: The ID of the collection to add the item to (optional).
+                If such a collection does not exist, one will be made.
 
         """
         new_item = {}
         if item_data is not None:
             new_item = item_data
         new_item.update(**{"item_id": item_id, "type": item_type})
+
+        if collection_id is not None:
+            try:
+                collection_immutable_id = self.get_collection(collection_id)["immutable_id"]
+            except RuntimeError:
+                collection_immutable_id = self.create_collection(collection_id)["immutable_id"]
+            new_item["collections"] = new_item.get("collections", [])
+            new_item["collections"].append({"immutable_id": collection_immutable_id})
 
         create_item_url = f"{self.datalab_api_url}/new-sample/"
         create_item_resp = self.session.post(
@@ -135,7 +149,7 @@ class DatalabClient(BaseDatalabClient):
 
         except Exception as exc:
             raise exc.__class__(
-                f"Failed to create item {item_id=} with data {item_data=} at {create_item_url}: {create_item_resp.status_code=}. Check the item information is correct."
+                f"Failed to create item {item_id=} with data {item_data=} at {create_item_url}: {create_item_resp.status_code=}, {create_item_resp.content}. Check the item information is correct."
             ) from exc
 
     def update_item(self, item_id: str, item_data: dict[str, Any]) -> dict[str, Any]:
@@ -398,3 +412,57 @@ class DatalabClient(BaseDatalabClient):
             raise RuntimeError(f"Failed to update block {block_type=}:\n{resp.text}")
 
         return resp.json()["new_block_data"]
+
+    def get_collection(self, collection_id: str) -> dict[str, Any]:
+        """Get a collection with a given ID.
+
+        Parameters:
+            collection_id: The ID of the collection to search for.
+
+        Returns:
+            A dictionary of collection data for the collection with the given ID.
+
+        """
+        collection_url = f"{self.datalab_api_url}/collections/{collection_id}"
+        collection_resp = self.session.get(collection_url, follow_redirects=True)
+        if collection_resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to find collection {collection_id=} at {collection_url}: {collection_resp.status_code=}. Check the collection ID is correct."
+            )
+        collection = collection_resp.json()
+        if collection["status"] != "success":
+            raise RuntimeError(
+                f"Failed to get collection at {collection_url}: {collection['status']!r}."
+            )
+        return collection["data"]
+
+    def create_collection(
+        self, collection_id: str, collection_data: Optional[dict] = None
+    ) -> dict[str, Any]:
+        """Create a collection with a given ID and collection data.
+
+        Parameters:
+            collection_id: The ID of the collection to create.
+            collection_data: The data for the collection.
+
+        """
+        collection_url = f"{self.datalab_api_url}/collections"
+
+        new_collection = {}
+        if collection_data is not None:
+            new_collection = collection_data
+        new_collection.update(**{"collection_id": collection_id, "type": "collections"})
+
+        collection_resp = self.session.put(
+            collection_url,
+            json={"data": collection_data},
+            follow_redirects=True,
+        )
+
+        if collection_resp.status_code != 200 or collection_resp.json()["status"] != "success":
+            raise RuntimeError(
+                f"Failed to create collection {collection_id=} at {collection_url}: {collection_resp.status_code=}. Check the collection information is correct."
+            )
+
+        created_collection = collection_resp.json()["data"]
+        return created_collection
