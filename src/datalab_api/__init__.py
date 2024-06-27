@@ -7,6 +7,12 @@ from ._base import BaseDatalabClient, __version__
 __all__ = ("__version__", "DatalabClient")
 
 
+class DuplicateItemError(ValueError):
+    """Raised when the API operation would create a duplicate item."""
+
+    pass
+
+
 class DatalabClient(BaseDatalabClient):
     """A client for the Datalab API.
 
@@ -119,16 +125,18 @@ class DatalabClient(BaseDatalabClient):
         )
         try:
             created_item = create_item_resp.json()
-            if created_item["status"] != "success":
-                raise RuntimeError(
-                    f"Failed to create item at {create_item_url}: {created_item['status']!r}."
+            if create_item_resp.status_code == 409:
+                raise DuplicateItemError(
+                    f"Item {item_id=} already exists at {create_item_url}: {created_item['status']!r}."
                 )
+            if created_item["status"] != "success":
+                raise RuntimeError(f"Failed to create item at {create_item_url}: {created_item}.")
             return created_item["sample_list_entry"]
 
-        except Exception:
-            raise RuntimeError(
+        except Exception as exc:
+            raise exc.__class__(
                 f"Failed to create item {item_id=} with data {item_data=} at {create_item_url}: {create_item_resp.status_code=}. Check the item information is correct."
-            )
+            ) from exc
 
     def update_item(self, item_id: str, item_data: dict[str, Any]) -> dict[str, Any]:
         """Update an item with the given item data.
