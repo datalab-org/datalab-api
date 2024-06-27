@@ -4,7 +4,7 @@ import os
 from pytest import fixture
 
 
-@fixture
+@fixture()
 def fake_ui_html():
     """Returns a mocked HTML response from the Datalab UI that includes a metadata tag for a fake API URL."""
     return """<!doctype html>
@@ -39,7 +39,7 @@ def fake_ui_html():
 </html>"""
 
 
-@fixture
+@fixture()
 def fake_info_json():
     """Returns a mocked JSON response for the API /info endpoint."""
 
