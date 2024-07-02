@@ -76,10 +76,7 @@ def bokeh_from_json(block_data, show=True):
     from bokeh.io import curdoc
     from bokeh.plotting import show as bokeh_show
 
-    if "bokeh_plot_data" in block_data:
-        bokeh_plot_data = block_data["bokeh_plot_data"]
-    else:
-        bokeh_plot_data = block_data
+    bokeh_plot_data = block_data.get("bokeh_plot_data", block_data)
     curdoc().replace_with_json(bokeh_plot_data["doc"])
     if show:
         bokeh_show(curdoc().roots[0])
