@@ -50,6 +50,11 @@ cli = [
     "click-shell ~= 2.1", # REPL-like interface
 ]
 
+cheminventory-helper = [
+    "pandas ~= 2.2",
+    "openpyxl ~= 3.0"
+]
+
 all = [
     "datalab-api[dev,docs,cli]"
 ]
