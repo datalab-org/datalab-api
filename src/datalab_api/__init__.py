@@ -454,13 +454,13 @@ class DatalabClient(BaseDatalabClient):
 
         collection_resp = self.session.put(
             collection_url,
-            json={"data": collection_data},
+            json={"data": new_collection},
             follow_redirects=True,
         )
 
-        if collection_resp.status_code != 200 or collection_resp.json()["status"] != "success":
+        if collection_resp.status_code != 201 or collection_resp.json()["status"] != "success":
             raise RuntimeError(
-                f"Failed to create collection {collection_id=} at {collection_url}: {collection_resp.status_code=}. Check the collection information is correct."
+                f"Failed to create collection {collection_id=} at {collection_url}: {collection_resp.status_code=}. Check the collection information is correct: {collection_resp.content}"
             )
 
         created_collection = collection_resp.json()["data"]
