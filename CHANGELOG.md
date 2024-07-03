@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.2.4](https://github.com/datalab-org/datalab-api/tree/v0.2.4) (2024-07-03)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.3...v0.2.4)
+
+**Merged pull requests:**
+
+- Migrate cheminventory import script to API helper [\#28](https://github.com/datalab-org/datalab-api/pull/28) ([ml-evs](https://github.com/ml-evs))
+- Enable more ruff rules and refactor [\#27](https://github.com/datalab-org/datalab-api/pull/27) ([ml-evs](https://github.com/ml-evs))
+- Dealing with collections [\#26](https://github.com/datalab-org/datalab-api/pull/26) ([ml-evs](https://github.com/ml-evs))
+- Add `DuplicateItemError` exception type to allow scripts to be re-entrant [\#25](https://github.com/datalab-org/datalab-api/pull/25) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.3](https://github.com/datalab-org/datalab-api/tree/v0.2.3) (2024-06-05)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.2...v0.2.3)
