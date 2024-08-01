@@ -113,8 +113,8 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         Parameters:
             datalab_api_url: The URL of the Datalab API.
                 TODO: If the URL of a datalab *UI* is provided, a request will be made to attempt
-                to resolve the underlying API URL (e.g., `https://public.datalab.odbx.science`
-                will 'redirect' to `https://public.api.odbx.science`).
+                to resolve the underlying API URL (e.g., `https://demo-api.datalab-org.io`
+                will 'redirect' to `https://demo-api.datalab-org.io`).
             log_level: The logging level to use for the client. Defaults to "WARNING".
 
 
