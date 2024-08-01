@@ -53,7 +53,7 @@ You can generate one for your account for a given *datalab* instance by visiting
 
 This API key can be set via the environment variable `DATALAB_API_KEY`.
 To suport the use case of needing to interact with multiple datalab instances, the client will also check prefixed environment variables that use the [`IDENTIFIER_PREFIX` of the chosen datalab instance](https://the-datalab.readthedocs.io/en/latest/config/#mandatory-settings), e.g., `GREY_DATALAB_API_KEY` or `PUBLIC_DATALAB_API_KEY`.
-Only keys that match will be read (e.g., other environment variables starting with `PUBLIC_` will be ignored, when connecting to the [public demo datalab](https://public.datalab.odbx.science)).
+Only keys that match will be read (e.g., other environment variables starting with `PUBLIC_` will be ignored, when connecting to the [public demo datalab](https://demo.datalab-org.io)).
 
 ### Python API
 
@@ -62,7 +62,7 @@ This package implements basic functionality for displaying and manipulating entr
 ```python
 from datalab_api import DatalabClient
 
-with DatalabClient("https://public.api.odbx.science") as client:
+with DatalabClient("https://demo-api.datalab-org.io") as client:
 
     # List all items of a given type
     items = client.get_items()
@@ -121,7 +121,7 @@ datalab > help get
 │ --help                       Show this message and exit.                                            │
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
-datalab > get samples api.odbx.science --page-limit 2
+datalab > get samples demo-api.datalab-org.io --page-limit 2
                                                     /samples/
 ┏━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
 ┃ type ┃ ID              ┃ refcode     ┃ name                           ┃ nblocks ┃ collections ┃ creators      ┃

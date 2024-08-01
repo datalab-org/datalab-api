@@ -19,7 +19,7 @@ class DatalabClient(BaseDatalabClient):
     amenable for use as a context manager, e.g.,
 
     ```python
-    with DatalabClient("https://public.api.odbx.science") as client:
+    with DatalabClient("https://demo-api.datalab-org.io") as client:
         client.get_items()
     ```
 
