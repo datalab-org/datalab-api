@@ -31,13 +31,11 @@ def import_cheminventory(filename: Path, client: DatalabClient):
     inventory_df["item_id"] = inventory_df["Barcode"]
     # Fill missing barcodes
     inventory_df["item_id"] = inventory_df["item_id"].fillna(
-        inventory_df["item_id"].apply(lambda _: _generate_random_startingmaterial_id())
+        inventory_df["item_id"].apply(lambda _: next(_generate_random_startingmaterial_id()))
     )
     inventory_df["Molecular Weight"] = inventory_df["Molecular Weight"].replace(" ", float("nan"))
 
-    inventory_df = inventory_df.dropna()
-
-    counts = {"success": 0, "duplicate": 0}
+    counts = {"success": 0, "duplicate": 0, "failed": 0}
 
     for item in inventory_df.to_dict(orient="records"):
         try:
@@ -47,5 +45,9 @@ def import_cheminventory(filename: Path, client: DatalabClient):
             counts["success"] += 1
         except DuplicateItemError:
             counts["duplicate"] += 1
+        except Exception as exc:
+            counts["failed"] += 1
+            print(f"Failed to import item: {item}. Error: {exc}")
+            continue
 
     print(f"Done: {counts=}")
