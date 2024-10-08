@@ -1,3 +1,4 @@
+from __future__ import annotations
 import warnings
 from collections.abc import Iterable
 from pathlib import Path
@@ -102,15 +103,15 @@ class DatalabClient(BaseDatalabClient):
 
     def create_item(
         self,
-        item_id: str,
-        item_type: str,
-        item_data: Optional[dict[str, Any]] = None,
-        collection_id: Optional[str] = None,
+        item_id: str | None = None,
+        item_type: str = "samples",
+        item_data: dict[str, Any] | None = None,
+        collection_id: str | None = None,
     ) -> dict[str, Any]:
         """Create an item with a given ID and item data.
 
         Parameters:
-            item_id: The ID of the item to create.
+            item_id: The ID of the item to create, if set to `None`, the server will generate one.
             item_type: The type of item to create, e.g., 'samples', 'cells'.
             item_data: The data for the item.
             collection_id: The ID of the collection to add the item to (optional).
@@ -133,7 +134,7 @@ class DatalabClient(BaseDatalabClient):
         create_item_url = f"{self.datalab_api_url}/new-sample/"
         create_item_resp = self.session.post(
             create_item_url,
-            json=new_item,
+            json={"new_sample_data": new_item, "generate_id_automatically": item_id is None},
             follow_redirects=True,
         )
         try:
