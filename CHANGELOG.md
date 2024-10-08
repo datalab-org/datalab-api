@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.2.6](https://github.com/datalab-org/datalab-api/tree/v0.2.6) (2024-10-08)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.5...v0.2.6)
+
+**Fixed bugs:**
+
+- Remove `item_id` before sending request to automatically generate item ID [\#32](https://github.com/datalab-org/datalab-api/pull/32) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.5](https://github.com/datalab-org/datalab-api/tree/v0.2.5) (2024-10-08)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.4...v0.2.5)
