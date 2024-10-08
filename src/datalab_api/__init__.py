@@ -124,6 +124,9 @@ class DatalabClient(BaseDatalabClient):
             new_item = item_data
         new_item.update({"item_id": item_id, "type": item_type})
 
+        if new_item["item_id"] is None:
+            new_item.pop("item_id")
+
         if collection_id is not None:
             try:
                 collection_immutable_id = self.get_collection(collection_id)["immutable_id"]
