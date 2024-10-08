@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.2.5](https://github.com/datalab-org/datalab-api/tree/v0.2.5) (2024-10-08)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.4...v0.2.5)
+
+**Implemented enhancements:**
+
+- Request randomly generated ID when creating item with no set ID [\#31](https://github.com/datalab-org/datalab-api/pull/31) ([ml-evs](https://github.com/ml-evs))
+
+**Merged pull requests:**
+
+- Make cheminventory helper more robust to missing barcodes [\#30](https://github.com/datalab-org/datalab-api/pull/30) ([ml-evs](https://github.com/ml-evs))
+- Update demo deployment URLs to new domain [\#29](https://github.com/datalab-org/datalab-api/pull/29) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.4](https://github.com/datalab-org/datalab-api/tree/v0.2.4) (2024-07-03)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.3...v0.2.4)
