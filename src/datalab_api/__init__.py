@@ -131,7 +131,8 @@ class DatalabClient(BaseDatalabClient):
             try:
                 collection_immutable_id = self.get_collection(collection_id)["immutable_id"]
             except RuntimeError:
-                collection_immutable_id = self.create_collection(collection_id)["immutable_id"]
+                self.create_collection(collection_id)
+                collection_immutable_id = self.get_collection(collection_id)["immutable_id"]
             new_item["collections"] = new_item.get("collections", [])
             new_item["collections"].append({"immutable_id": collection_immutable_id})
 
