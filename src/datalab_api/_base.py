@@ -95,6 +95,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     _api_key: Optional[str] = None
     _session: Optional[httpx.Client] = None
     _headers: dict[str, str] = {}
+    _timeout: httpx.Timeout = httpx.Timeout(10.0, read=60.0)
 
     bad_server_versions: Optional[tuple[tuple[int, int, int]]] = ((0, 2, 0),)
     """Any known server versions that are not supported by this client."""
@@ -172,12 +173,18 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     @property
     def session(self) -> httpx.Client:
         if self._session is None:
-            return self._http_client(headers=self.headers)
+            return self._http_client(headers=self.headers, timeout=self.timeout)
         return self._session
 
     @property
-    def headers(self):
+    def headers(self) -> dict[str, str]:
+        """Any headers to send with each request to the datalab API."""
         return self._headers
+
+    @property
+    def timeout(self) -> httpx.Timeout:
+        """A timeout object to use for the datalab API session."""
+        return self._timeout
 
     def _version_negotiation(self):
         """Check whether this client is expected to work with this instance.
