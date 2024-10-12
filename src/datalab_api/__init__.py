@@ -389,6 +389,33 @@ class DatalabClient(BaseDatalabClient):
 
         return block_data
 
+    def update_data_block(
+        self, item_id: str, block_id: str, block_type: str, block_data: dict
+    ) -> dict[str, Any]:
+        """Attempts to update a block with the given payload of data,
+        returning the updated block.
+
+        Parameters:
+            item_id: The ID of the item that the block is attached to.
+            block_id: The ID of existing block.
+            block_type: The type of block to update.
+            block_data: The payload of block data to update; will be used to selectively update
+                any fields present, with validation performed by the remote block code itself.
+
+        Returns:
+            If successful, the updated block data.
+
+        Raises:
+            RuntimeError: If the block update fails.
+
+        """
+        payload = {k: v for k, v in block_data.items()}
+        payload["block_id"] = block_id
+        payload["blocktype"] = block_type
+        payload["item_id"] = item_id
+
+        return self._update_data_block(block_type=block_type, block_data=payload)
+
     def _update_data_block(
         self, block_type: str, block_data: dict, file_ids: str | list[str] | None = None
     ) -> dict[str, Any]:
@@ -401,7 +428,6 @@ class DatalabClient(BaseDatalabClient):
                 raise RuntimeError(
                     "API does not currently support attaching multiple files in a block."
                 )
-
             block_data["file_id"] = file_ids[0]
 
         blocks_url = f"{self.datalab_api_url}/update-block/"
