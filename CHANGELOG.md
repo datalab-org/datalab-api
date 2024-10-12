@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.2.7](https://github.com/datalab-org/datalab-api/tree/v0.2.7) (2024-10-12)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.6...v0.2.7)
+
+**Merged pull requests:**
+
+- Guard against immutable ID not being returned from create collection [\#35](https://github.com/datalab-org/datalab-api/pull/35) ([ml-evs](https://github.com/ml-evs))
+- Expose `update_data_block`: public interface for selective block updates [\#34](https://github.com/datalab-org/datalab-api/pull/34) ([ml-evs](https://github.com/ml-evs))
+- Allow httpx session timeout to be configured [\#33](https://github.com/datalab-org/datalab-api/pull/33) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.6](https://github.com/datalab-org/datalab-api/tree/v0.2.6) (2024-10-08)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.5...v0.2.6)
