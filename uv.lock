@@ -403,7 +403,7 @@ toml = [
 
 [[package]]
 name = "datalab-api"
-version = "0.2.7"
+version = "0.2.7.post4+g6135196"
 source = { editable = "." }
 dependencies = [
     { name = "bokeh" },
@@ -460,9 +460,9 @@ requires-dist = [
     { name = "mkdocstrings", extras = ["python-legacy"], marker = "extra == 'docs'" },
     { name = "openpyxl", marker = "extra == 'cheminventory-helper'", specifier = "~=3.0" },
     { name = "pandas", marker = "extra == 'cheminventory-helper'", specifier = "~=2.2" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = "~=3.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3,<5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "~=8.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = "~=5.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5,<7" },
     { name = "respx", marker = "extra == 'dev'", specifier = "~=0.21" },
     { name = "rich", specifier = "~=13.0" },
     { name = "typer", marker = "extra == 'cli'", specifier = "~=0.9" },
@@ -642,7 +642,7 @@ name = "importlib-metadata"
 version = "8.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp" },
+    { name = "zipp", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cd/12/33e59336dca5be0c398a7482335911a33aa0e20776128f038019f1a95f1b/importlib_metadata-8.5.0.tar.gz", hash = "sha256:71522656f0abace1d072b9e5481a48f07c138e00f079c38c8f883823f9c26bd7", size = 55304 }
 wheels = [
