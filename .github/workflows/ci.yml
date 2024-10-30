@@ -22,19 +22,23 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+          enable-cache: true
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -U setuptools
-          pip install .[dev]
+          uv sync --locked --all-extras --dev
 
       - name: Run pre-commit
         run: |
-          pre-commit run --all-files --show-diff-on-failure
+          uv run pre-commit run --all-files --show-diff-on-failure
 
   tests:
     name: Run pytest
@@ -47,22 +51,26 @@ jobs:
         python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+          enable-cache: true
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -U setuptools
-          pip install .[all]
+          uv sync --locked --all-extras --dev
 
       - name: Run pytest
         run: |
-          pytest -rs -vvv --cov-report=term --cov-report=xml --cov ./src/datalab_api ./tests
+          uv run pytest -rs -vvv --cov-report=term --cov-report=xml --cov ./src/datalab_api ./tests
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.10' && github.repository == 'datalab-org/datalab-api'
