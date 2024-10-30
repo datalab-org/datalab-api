@@ -68,10 +68,12 @@ repository = "https://github.com/datalab-org/datalab-api"
 documentation = "https://datalab-python-api.readthedocs.io"
 changelog = "https://github.com/datalab-org/datalab-api/releases"
 
+[tool.uv]
+cache-keys = [{ git = true }]
+
 [tool.versioningit.vcs]
 method = "git"
 default-tag = "0.0.1"
-
 
 [tool.mypy]
 # plugins = "pydantic.mypy"
