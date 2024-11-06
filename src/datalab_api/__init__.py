@@ -30,13 +30,17 @@ class DatalabClient(BaseDatalabClient):
     def get_info(self) -> dict[str, Any]:
         """Fetch metadata associated with this datalab instance.
 
+        The server information is stored on the client and can be accessed
+        by the `info` attribute.
+
         Returns:
             dict: The JSON response from the `/info` endpoint of the Datalab API.
 
         """
         info_url = f"{self.datalab_api_url}/info"
         info_resp = self.session.get(info_url, follow_redirects=True)
-        return info_resp.json()
+        self.info = info_resp.json()["data"]
+        return self.info
 
     def authenticate(self):
         """Tests authentication of the client with the Datalab API."""
@@ -47,6 +51,26 @@ class DatalabClient(BaseDatalabClient):
                 f"Failed to authenticate to {self.datalab_api_url!r}: {user_resp.status_code=} from {self._headers}. Please check your API key."
             )
         return user_resp.json()
+
+    def get_block_info(self) -> list[dict[str, Any]]:
+        """Return the list of available data blocks types for this instance,
+        including some details and descriptions of their usage.
+
+        The block information is stored on the client and can be accessed
+        by the `block_info` attribute.
+
+        Returns:
+            A list of dictionary of block types.
+
+        """
+        block_info_url = f"{self.datalab_api_url}/info/blocks"
+        block_info_resp = self.session.get(block_info_url, follow_redirects=True)
+        if block_info_resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to list block information at {block_info_url}: {block_info_resp.status_code=}."
+            )
+        self.block_info = block_info_resp.json()["data"]
+        return self.block_info
 
     def get_items(self, item_type: str | None = "samples") -> list[dict[str, Any]]:
         """List items of the given type available to the authenticated user.
