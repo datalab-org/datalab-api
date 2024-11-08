@@ -43,21 +43,24 @@ def pretty_displayer(method):
                 if result:
                     pprint(result, max_length=None, max_string=100, max_depth=3)
             elif isinstance(result, list):
-                table = Table(show_lines=True)
-                table.add_column("type", overflow="crop", justify="center")
-                table.add_column("ID", style="cyan", no_wrap=True)
-                table.add_column("refcode", style="magenta", no_wrap=True)
-                table.add_column("name", width=30, overflow="ellipsis", no_wrap=True)
-                for item in result[:page_limit]:
-                    table.add_row(
-                        item["type"][0].upper(),
-                        item["item_id"],
-                        item["refcode"],
-                        item["name"],
-                        end_section=True,
-                    )
-                console = Console()
-                console.print(table)
+                try:
+                    table = Table(show_lines=True)
+                    table.add_column("type", overflow="crop", justify="center")
+                    table.add_column("ID", style="cyan", no_wrap=True)
+                    table.add_column("refcode", style="magenta", no_wrap=True)
+                    table.add_column("name", width=30, overflow="ellipsis", no_wrap=True)
+                    for item in result[:page_limit]:
+                        table.add_row(
+                            item["type"][0].upper(),
+                            item["item_id"],
+                            item["refcode"],
+                            item["name"],
+                            end_section=True,
+                        )
+                    console = Console()
+                    console.print(table)
+                except Exception:
+                    pprint(result, max_length=None, max_string=100, max_depth=3)
 
         return result
 
@@ -97,6 +100,12 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     _headers: dict[str, str] = {}
     _timeout: httpx.Timeout = httpx.Timeout(10.0, read=60.0)
 
+    info: dict[str, Any] = {}
+    """The `data` response from the `/info` endpoint of the Datalab API."""
+
+    block_info: list[dict[str, Any]] = []
+    """The `data` response from the `/info/blocks` endpoint of the Datalab API."""
+
     bad_server_versions: Optional[tuple[tuple[int, int, int]]] = ((0, 2, 0),)
     """Any known server versions that are not supported by this client."""
 
@@ -134,13 +143,12 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
 
         self._detect_api_url()
 
-        info_json = self.get_info()
+        self.get_info()
+        self.get_block_info()
 
-        self._datalab_api_versions: list[str] = info_json["data"]["attributes"][
-            "available_api_versions"
-        ]
-        self._datalab_server_version: str = info_json["data"]["attributes"]["server_version"]
-        self._datalab_instance_prefix: Optional[str] = info_json["data"]["attributes"].get(
+        self._datalab_api_versions: list[str] = self.info["attributes"]["available_api_versions"]
+        self._datalab_server_version: str = self.info["attributes"]["server_version"]
+        self._datalab_instance_prefix: Optional[str] = self.info["attributes"].get(
             "identifier_prefix"
         )
 
@@ -168,6 +176,9 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             )
 
     def get_info(self) -> dict[str, Any]:
+        raise NotImplementedError
+
+    def get_block_info(self) -> list[dict[str, Any]]:
         raise NotImplementedError
 
     @property

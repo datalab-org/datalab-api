@@ -48,6 +48,15 @@ def fake_info_json():
     )
 
 
+@fixture()
+def fake_block_info_json():
+    """Returns a mocked JSON response for the API /info endpoint."""
+
+    return json.loads(
+        '{"data":[{"attributes":{"accepted_file_extensions": [], "description":"Add a rich text comment to the document","name": "Comment", "version": "0.1.0"}, "id": "comment", "type": "block_type"}]}'
+    )
+
+
 @fixture(scope="session")
 def fake_api_key():
     """Returns a fake API key."""

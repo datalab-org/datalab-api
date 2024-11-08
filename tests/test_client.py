@@ -5,12 +5,15 @@ from httpx import Response
 
 
 @respx.mock
-def test_redirect_url(fake_ui_html, fake_info_json):
+def test_redirect_url(fake_ui_html, fake_info_json, fake_block_info_json):
     fake_ui = respx.get("https://ui.datalab.industries").mock(
         return_value=Response(200, content=fake_ui_html)
     )
-    fake_api = respx.get("https://api.datalab.industries/info").mock(
+    fake_info_api = respx.get("https://api.datalab.industries/info").mock(
         return_value=Response(200, json=fake_info_json)
+    )
+    fake_block_info_api = respx.get("https://api.datalab.industries/info/blocks").mock(
+        return_value=Response(200, json=fake_block_info_json)
     )
     with pytest.warns(
         UserWarning,
@@ -18,5 +21,6 @@ def test_redirect_url(fake_ui_html, fake_info_json):
     ):
         client = DatalabClient("https://ui.datalab.industries")
     assert fake_ui.called
-    assert fake_api.called
+    assert fake_info_api.called
+    assert fake_block_info_api.called
     assert client.datalab_api_url == "https://api.datalab.industries"
