@@ -26,7 +26,7 @@ dependencies =[
     "httpx ~= 0.27", # better HTTP requests
     "bokeh ~= 2.4",  # interactive plots from datalab directly
     "rich ~= 13.0",  # nicer terminal output
-    "numpy < 2", # upper pin for numpy due to bad pins in bokeh
+    "numpy < 3", # upper pin for numpy due to bad pins in bokeh
 ]
 
 
