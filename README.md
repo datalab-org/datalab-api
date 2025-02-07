@@ -10,11 +10,11 @@
 <a href="https://pypi.org/datalab-api"><img src="https://img.shields.io/pypi/pyversions/datalab-api?logo=python&label=Python%20versions" /></a>
 </div>
 
-A simple Python API that can interact with [*datalab*](https://github.com/the-grey-group/datalab) instances.
+A simple Python API that can interact with [*datalab*](https://github.com/datalab-org/datalab) instances.
 
 The idea here is to provide a set of utility functions and models for manipulating samples, cells, inventory, files, users and metadata associated with *datalab* entries in an automated way.
 
-This API may not expose all the functionality available in a given *datalab* instance, and the idea would be that this package can support multiple versions of the underlying [*datalab* REST API](https://the-datalab.readthedocs.io/en/latest/rest_api/).
+This API may not expose all the functionality available in a given *datalab* instance, and the idea would be that this package can support multiple versions of the underlying [*datalab* REST API](https://docs.datalab-org.io/en/stable/rest_api/).
 This means that the API is primarily *functional* in nature, as opposed to object-oriented, since *datalab* instances are free to use their own custom data models.
 The available schemas are reported as instance metadata and in the future object-oriented models may be able to be genereated directly in the client (so e.g., the returned data would be Python objects like `Sample` rather than JSON data).
 
@@ -42,9 +42,9 @@ pip install .
 ## Usage
 
 Example usage as a Jupyter notebook can be found in the `examples` directory or
-in the [online documentation](https://datalab-api.readthedocs.io/), as
+in the [online documentation](https://api-docs.datalab-org.io), as
 well as the full [API
-documentation](https://datalab-api.readthedocs.io/en/latest/reference/).
+documentation](https://api-docs.datalab-org.io/en/stable/reference/).
 
 ### Authentication
 
@@ -52,7 +52,7 @@ Currently the only supported authentication method is via an API key.
 You can generate one for your account for a given *datalab* instance by visiting the `/get-api-key` endpoint of your chosen instance, or, if using a recent version of *datalab*, by visiting your account settings in the browser.
 
 This API key can be set via the environment variable `DATALAB_API_KEY`.
-To suport the use case of needing to interact with multiple datalab instances, the client will also check prefixed environment variables that use the [`IDENTIFIER_PREFIX` of the chosen datalab instance](https://the-datalab.readthedocs.io/en/latest/config/#mandatory-settings), e.g., `GREY_DATALAB_API_KEY` or `PUBLIC_DATALAB_API_KEY`.
+To suport the use case of needing to interact with multiple datalab instances, the client will also check prefixed environment variables that use the [`IDENTIFIER_PREFIX` of the chosen datalab instance](https://docs.datalab-org.io/en/stable/config/#mandatory-settings), e.g., `GREY_DATALAB_API_KEY` or `PUBLIC_DATALAB_API_KEY`.
 Only keys that match will be read (e.g., other environment variables starting with `PUBLIC_` will be ignored, when connecting to the [public demo datalab](https://demo.datalab-org.io)).
 
 ### Python API
