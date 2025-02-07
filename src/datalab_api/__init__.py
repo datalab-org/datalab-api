@@ -85,7 +85,7 @@ class DatalabClient(BaseDatalabClient):
         """
         if item_type is None:
             item_type = "samples"
-        items_url = f"{self.datalab_api_url}/{item_type}"
+        items_url = f"{self.datalab_api_url}/samples/?type={item_type}"
         items_resp = self.session.get(items_url, follow_redirects=True)
         if items_resp.status_code != 200:
             raise RuntimeError(
