@@ -277,8 +277,7 @@ class DatalabClient(BaseDatalabClient):
 
         item_data = self.get_item(item_id)
         for f in item_data.get("files", []):
-            file_location = f["location"]
-            url = file_location.replace("/app", self.datalab_api_url)
+            url = f"{self.datalab_api_url}/files/{f['immutable_id']}/{f['name']}"
             if Path(f["name"]).exists():
                 warnings.warn(f"Will not overwrite existing file {f['name']}")
                 continue
