@@ -5,6 +5,14 @@ from pytest import fixture
 
 
 @fixture
+def fake_samples_json():
+    """Returns a mocked JSON response for the API /samples endpoint."""
+    return json.loads(
+        '{"status": "success", "samples": [{"chemform": "NaCoO2", "collections": [], "creators": [{"contact_email": null, "display_name": "A. Nother"}], "date": "2025-02-25T14:33:00", "item_id": "test", "name": "", "nblocks": 0, "refcode": "demo:test", "type": "samples"}]}'
+    )
+
+
+@fixture
 def fake_ui_html():
     """Returns a mocked HTML response from the Datalab UI that includes a metadata tag for a fake API URL."""
     return """<!doctype html>
