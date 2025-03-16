@@ -1,20 +1,25 @@
 # Changelog
 
-## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+## [v0.2.9](https://github.com/datalab-org/datalab-api/tree/v0.2.9) (2025-03-16)
 
-[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.8...HEAD)
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.8...v0.2.9)
 
-**Fixed bugs:**
+**Merged pull requests:**
 
-- File download fails when server's files are not stored in default location [\#51](https://github.com/datalab-org/datalab-api/issues/51)
+- Add test for `get_items` [\#54](https://github.com/datalab-org/datalab-api/pull/54) ([ml-evs](https://github.com/ml-evs))
+- Only install bokeh if not running via emscripten [\#53](https://github.com/datalab-org/datalab-api/pull/53) ([ml-evs](https://github.com/ml-evs))
 
-## [v0.2.8](https://github.com/datalab-org/datalab-api/tree/v0.2.8) (2025-02-13)
+## [v0.2.8](https://github.com/datalab-org/datalab-api/tree/v0.2.8) (2025-03-16)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.7...v0.2.8)
 
 **Implemented enhancements:**
 
 - Add method for pulling block info from deployment and add it to examples [\#40](https://github.com/datalab-org/datalab-api/pull/40) ([ml-evs](https://github.com/ml-evs))
+
+**Fixed bugs:**
+
+- File download fails when server's files are not stored in default location [\#51](https://github.com/datalab-org/datalab-api/issues/51)
 
 **Merged pull requests:**
 
