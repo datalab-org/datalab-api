@@ -8,7 +8,7 @@ on:
 env:
   PUBLISH_UPDATE_BRANCH: main
   GIT_USER_NAME: datalab developers
-  GIT_USER_EMAIL: "datalab@odbx.science"
+  GIT_USER_EMAIL: "dev@datalab-org.io"
 
 jobs:
 
