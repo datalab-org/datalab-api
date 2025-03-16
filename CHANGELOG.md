@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.8...HEAD)
+
+**Fixed bugs:**
+
+- File download fails when server's files are not stored in default location [\#51](https://github.com/datalab-org/datalab-api/issues/51)
+
+## [v0.2.8](https://github.com/datalab-org/datalab-api/tree/v0.2.8) (2025-02-13)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.7...v0.2.8)
+
+**Implemented enhancements:**
+
+- Add method for pulling block info from deployment and add it to examples [\#40](https://github.com/datalab-org/datalab-api/pull/40) ([ml-evs](https://github.com/ml-evs))
+
+**Merged pull requests:**
+
+- Fix file download link so that it works locally and across all datalab configs [\#52](https://github.com/datalab-org/datalab-api/pull/52) ([ml-evs](https://github.com/ml-evs))
+- add sublime files to .gitignore [\#49](https://github.com/datalab-org/datalab-api/pull/49) ([jdbocarsly](https://github.com/jdbocarsly))
+- Replace RTD links with real domain [\#48](https://github.com/datalab-org/datalab-api/pull/48) ([ml-evs](https://github.com/ml-evs))
+- Bump astral-sh/setup-uv from 4 to 5 in the github-actions group [\#45](https://github.com/datalab-org/datalab-api/pull/45) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump the github-actions group across 1 directory with 2 updates [\#44](https://github.com/datalab-org/datalab-api/pull/44) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump the github-actions group with 2 updates [\#37](https://github.com/datalab-org/datalab-api/pull/37) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Switch CI to uv and add dependabot + uv.lock [\#36](https://github.com/datalab-org/datalab-api/pull/36) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.7](https://github.com/datalab-org/datalab-api/tree/v0.2.7) (2024-10-12)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.6...v0.2.7)
