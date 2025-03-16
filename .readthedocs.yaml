@@ -6,15 +6,10 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.10"
-
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
-        - cli
-
-mkdocs:
-  configuration: ./mkdocs.yml
-  fail_on_warning: false
+  commands:
+    - asdf plugin add uv
+    - asdf install uv latest
+    - asdf global uv latest
+    - uv sync --all-extras --dev
+    - uv pip install .
+    - .venv/bin/mkdocs build --site-dir $READTHEDOCS_OUTPUT/html
