@@ -1,7 +1,8 @@
 import pytest
 import respx
-from datalab_api import DatalabClient
 from httpx import Response
+
+from datalab_api import DatalabClient
 
 
 @respx.mock

@@ -7,7 +7,7 @@ from typing import Any, Optional, Union
 
 from ._base import BaseDatalabClient, __version__
 
-__all__ = ("__version__", "DatalabClient")
+__all__ = ("DatalabClient", "__version__")
 
 
 class DuplicateItemError(ValueError):

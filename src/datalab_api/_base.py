@@ -14,7 +14,7 @@ from rich.table import Table
 
 __version__ = version("datalab-api")
 
-__all__ = ("__version__", "BaseDatalabClient")
+__all__ = ("BaseDatalabClient", "__version__")
 
 
 def pretty_displayer(method):
