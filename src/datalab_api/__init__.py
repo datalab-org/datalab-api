@@ -282,8 +282,9 @@ class DatalabClient(BaseDatalabClient):
                 warnings.warn(f"Will not overwrite existing file {f['name']}")
                 continue
             with open(f["name"], "wb") as file:
-                response = self.session.get(url, follow_redirects=True)
-                file.write(response.content)
+                with self.session.stream("GET", url, follow_redirects=True) as response:
+                    for chunk in response.iter_bytes(chunk_size=1024):
+                        file.write(chunk)
 
     def get_block(self, item_id: str, block_id: str, block_data: dict[str, Any]) -> dict[str, Any]:
         """Get a block with a given ID and block data.
