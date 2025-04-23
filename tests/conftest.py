@@ -13,6 +13,126 @@ def fake_samples_json():
 
 
 @fixture
+def fake_sample_json():
+    """Returns a mocked JSON response for the API /get-item-data/<sample_id> endpoint."""
+    return json.loads("""
+            {
+  "child_items": [],
+  "files_data": {
+    "6808d81e9e49c952b04da54e": {
+      "blocks": [],
+      "creator_ids": [
+        "6574f788aabb227db8d1b14e"
+      ],
+      "creators": null,
+      "extension": ".asc",
+      "immutable_id": "6808d81e9e49c952b04da54e",
+      "is_live": false,
+      "item_ids": [
+        "KUVEKJ"
+      ],
+      "last_modified": "2025-04-23T12:07:58.652000+00:00",
+      "last_modified_remote": null,
+      "location": "/app/files/6808d81e9e49c952b04da54e/20230426_143716_Scan_5s_1to110.asc",
+      "metadata": {},
+      "name": "20230426_143716_Scan_5s_1to110.asc",
+      "original_name": "20230426 143716 Scan 5s 1to110.asc",
+      "relationships": null,
+      "representation": null,
+      "revision": 1,
+      "revisions": null,
+      "size": 5777461,
+      "source": "uploaded",
+      "source_path": null,
+      "source_server_name": null,
+      "time_added": "2025-04-23T12:07:58.652000+00:00",
+      "type": "files",
+      "url_path": null
+    }
+  },
+  "item_data": {
+    "blocks_obj": {
+      "otsvedqi7d0bzaf": {
+        "block_id": "otsvedqi7d0bzaf",
+        "blocktype": "ms",
+        "collection_id": null,
+        "file_id": "6808d81e9e49c952b04da54e",
+        "item_id": "KUVEKJ",
+        "title": "Mass spectrometry"
+      }
+    },
+    "chemform": null,
+    "collections": [],
+    "creator_ids": [
+      "6574f788aabb227db8d1b14e"
+    ],
+    "creators": [
+      {
+        "contact_email": null,
+        "display_name": "Matthew Evans",
+        "immutable_id": "6574f788aabb227db8d1b14e"
+      }
+    ],
+    "date": "2025-04-23T12:07:00+00:00",
+    "description": null,
+    "display_order": [
+      "otsvedqi7d0bzaf"
+    ],
+    "file_ObjectIds": [
+      "6808d81e9e49c952b04da54e"
+    ],
+    "files": [
+      {
+        "blocks": [],
+        "creator_ids": [
+          "6574f788aabb227db8d1b14e"
+        ],
+        "creators": null,
+        "extension": ".asc",
+        "immutable_id": "6808d81e9e49c952b04da54e",
+        "is_live": false,
+        "item_ids": [
+          "KUVEKJ"
+        ],
+        "last_modified": "2025-04-23T12:07:58.652000+00:00",
+        "last_modified_remote": null,
+        "location": "/app/files/6808d81e9e49c952b04da54e/20230426_143716_Scan_5s_1to110.asc",
+        "metadata": {},
+        "name": "20230426_143716_Scan_5s_1to110.asc",
+        "original_name": "20230426 143716 Scan 5s 1to110.asc",
+        "relationships": null,
+        "representation": null,
+        "revision": 1,
+        "revisions": null,
+        "size": 5777461,
+        "source": "uploaded",
+        "source_path": null,
+        "source_server_name": null,
+        "time_added": "2025-04-23T12:07:58.652000+00:00",
+        "type": "files",
+        "url_path": null
+      }
+    ],
+    "immutable_id": "6808d7fb47ccfd57b44da54e",
+    "item_id": "KUVEKJ",
+    "last_modified": null,
+    "name": "",
+    "refcode": "demo:KUVEKJ",
+    "relationships": [],
+    "revision": 1,
+    "revisions": null,
+    "synthesis_constituents": [],
+    "synthesis_description": null,
+    "type": "samples"
+  },
+  "item_id": "KUVEKJ",
+  "parent_items": [],
+  "status": "success"
+}
+""")
+
+
+@fixture
 def fake_ui_html():
     """Returns a mocked HTML response from the Datalab UI that includes a metadata tag for a fake API URL."""
     return """<!doctype html>

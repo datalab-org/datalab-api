@@ -28,7 +28,7 @@ def test_redirect_url(fake_ui_html, fake_info_json, fake_block_info_json):
 
 
 @respx.mock
-def test_sample_list(fake_samples_json, fake_info_json, fake_block_info_json):
+def test_sample_list(fake_samples_json, fake_info_json, fake_sample_json, fake_block_info_json):
     fake_api = respx.get("https://api.datalab.industries/").mock(
         return_value=Response(200, content="<!doctype html></html>")
     )
@@ -41,6 +41,9 @@ def test_sample_list(fake_samples_json, fake_info_json, fake_block_info_json):
     fake_block_info_api = respx.get("https://api.datalab.industries/info/blocks").mock(
         return_value=Response(200, json=fake_block_info_json)
     )
+    fake_item_api = respx.get("https://api.datalab.industries/get-item-data/KUVEKJ").mock(
+        return_value=Response(200, json=fake_sample_json)
+    )
     with DatalabClient("https://api.datalab.industries") as client:
         samples = client.get_items(display=True)
         assert fake_samples_api.called
@@ -49,3 +52,6 @@ def test_sample_list(fake_samples_json, fake_info_json, fake_block_info_json):
         assert fake_block_info_api.called
         assert len(samples)
         assert samples[0]["item_id"] == "test"
+        sample = client.get_item("KUVEKJ", display=True)
+        assert fake_item_api.called
+        assert sample["item_id"] == "KUVEKJ"
