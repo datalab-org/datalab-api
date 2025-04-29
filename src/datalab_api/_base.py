@@ -270,7 +270,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
 
         return self.api_key
 
-    def __enter__(self) -> "BaseDatalabClient":
+    def __enter__(self):
         return self
 
     def __exit__(self, *_):
