@@ -173,6 +173,10 @@ class DatalabClient(BaseDatalabClient):
                     f"Item {item_id=} already exists at {create_item_url}: {created_item['status']!r}."
                 )
             if created_item["status"] != "success":
+                if "DuplicateKeyError" in created_item["message"]:
+                    raise DuplicateItemError(
+                        f"Item {item_id=} already exists at {create_item_url}: {created_item['status']!r}."
+                    )
                 raise RuntimeError(f"Failed to create item at {create_item_url}: {created_item}.")
             return created_item["sample_list_entry"]
 
