@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.2.10](https://github.com/datalab-org/datalab-api/tree/v0.2.10) (2025-04-29)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.9...v0.2.10)
+
+**Merged pull requests:**
+
+- Remove typehint on base class `__enter__` that confuses parsers [\#59](https://github.com/datalab-org/datalab-api/pull/59) ([ml-evs](https://github.com/ml-evs))
+- Bump astral-sh/setup-uv from 5 to 6 in the github-actions group [\#58](https://github.com/datalab-org/datalab-api/pull/58) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Use streaming downloads when requesting file data [\#57](https://github.com/datalab-org/datalab-api/pull/57) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.9](https://github.com/datalab-org/datalab-api/tree/v0.2.9) (2025-03-16)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.8...v0.2.9)
