@@ -1,6 +1,15 @@
 # Changelog
 
-## [v0.2.10](https://github.com/datalab-org/datalab-api/tree/v0.2.10) (2025-04-29)
+## [v0.2.11](https://github.com/datalab-org/datalab-api/tree/v0.2.11) (2025-05-02)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.10...v0.2.11)
+
+**Merged pull requests:**
+
+- Return collection members from `.get_collection` [\#61](https://github.com/datalab-org/datalab-api/pull/61) ([ml-evs](https://github.com/ml-evs))
+- Deal with uncaught duplicate key errors on client-side [\#60](https://github.com/datalab-org/datalab-api/pull/60) ([ml-evs](https://github.com/ml-evs))
+
+## [v0.2.10](https://github.com/datalab-org/datalab-api/tree/v0.2.10) (2025-05-01)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.9...v0.2.10)
 
