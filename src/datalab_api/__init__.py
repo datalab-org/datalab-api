@@ -153,10 +153,10 @@ class DatalabClient(BaseDatalabClient):
 
         if collection_id is not None:
             try:
-                collection_immutable_id = self.get_collection(collection_id)["immutable_id"]
+                collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
             except RuntimeError:
                 self.create_collection(collection_id)
-                collection_immutable_id = self.get_collection(collection_id)["immutable_id"]
+                collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
             new_item["collections"] = new_item.get("collections", [])
             new_item["collections"].append({"immutable_id": collection_immutable_id})
 
@@ -472,14 +472,15 @@ class DatalabClient(BaseDatalabClient):
 
         return resp.json()["new_block_data"]
 
-    def get_collection(self, collection_id: str) -> dict[str, Any]:
+    def get_collection(self, collection_id: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Get a collection with a given ID.
 
         Parameters:
             collection_id: The ID of the collection to search for.
 
         Returns:
-            A dictionary of collection data for the collection with the given ID.
+            A dictionary of collection data for the collection with the given ID,
+            and a list of the member items.
 
         """
         collection_url = f"{self.datalab_api_url}/collections/{collection_id}"
@@ -493,7 +494,7 @@ class DatalabClient(BaseDatalabClient):
             raise RuntimeError(
                 f"Failed to get collection at {collection_url}: {collection['status']!r}."
             )
-        return collection["data"]
+        return collection["data"], collection["child_items"]
 
     def create_collection(
         self, collection_id: str, collection_data: dict | None = None

@@ -55,3 +55,27 @@ def test_sample_list(fake_samples_json, fake_info_json, fake_sample_json, fake_b
         sample = client.get_item("KUVEKJ", display=True)
         assert fake_item_api.called
         assert sample["item_id"] == "KUVEKJ"
+
+
+@respx.mock
+def test_collection_get(fake_info_json, fake_block_info_json, fake_collection_json):
+    fake_api = respx.get("https://api.datalab.industries/").mock(
+        return_value=Response(200, content="<!doctype html></html>")
+    )
+    fake_info_api = respx.get("https://api.datalab.industries/info").mock(
+        return_value=Response(200, json=fake_info_json)
+    )
+    fake_block_info_api = respx.get("https://api.datalab.industries/info/blocks").mock(
+        return_value=Response(200, json=fake_block_info_json)
+    )
+
+    fake_collection_api = respx.get(
+        "https://api.datalab.industries/collections/test_collection"
+    ).mock(return_value=Response(200, json=fake_collection_json))
+
+    with DatalabClient("https://api.datalab.industries") as client:
+        collection, children = client.get_collection("test_collection")
+        assert fake_api.called
+        assert fake_info_api.called
+        assert fake_block_info_api.called
+        assert fake_collection_api.called

@@ -13,6 +13,14 @@ def fake_samples_json():
 
 
 @fixture
+def fake_collection_json():
+    """Returns a mocked JSON response for the API /samples endpoint."""
+    return json.loads(
+        '{"child_items":[{"chemform":null,"creators":[{"display_name":"Matthew Evans"}],"date":"2024-11-28T13:01:00","item_id":"KRMBTQ","name":"","nblocks":0,"nfiles":0,"refcode":"test:KRMBTQ","type":"samples"},{"chemform":null,"creators":[{"display_name":"Matthew Evans"},{"display_name":"Greymon (bot)"}],"date":"2024-11-06T13:46:00","item_id":"RCLPGC","name":"","nblocks":0,"nfiles":0,"refcode":"test:RCLPGC","type":"samples"}],"collection_id":"test","data":{"blocks_obj":{},"collection_id":"test","creator_ids":["6659fe2a7024bf196a90c933"],"creators":[{"display_name":"Matthew Evans","immutable_id":"6659fe2a7024bf196a90c933"}],"description":null,"display_order":[],"immutable_id":"672be2ddb2dcbefd7f9b4342","last_modified":"2024-11-06T21:42:53.974000+00:00","num_items":2,"relationships":null,"title":null,"type":"collections"},"status":"success"}'
+    )
+
+
+@fixture
 def fake_sample_json():
     """Returns a mocked JSON response for the API /get-item-data/<sample_id> endpoint."""
     return json.loads("""
