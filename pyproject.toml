@@ -7,7 +7,7 @@ name = "datalab-api"
 readme = "README.md"
 description = "A Python API for instances of the datalab data management platform (https://github.com/datalab-org/datalab)."
 keywords = []
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Matthew Evans", email = "matthew@ml-evs.science" }]
 dynamic = ["version"]
 classifiers = [
