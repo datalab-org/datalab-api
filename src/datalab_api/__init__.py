@@ -102,7 +102,15 @@ class DatalabClient(BaseDatalabClient):
         items = items_resp.json()
         if items["status"] != "success":
             raise RuntimeError(f"Failed to list items at {items_url}: {items['status']!r}.")
-        return items[item_type]
+
+        if item_type in items:
+            # Old approach
+            return items[item_type]
+        if "items" in items:
+            return items["items"]
+
+        else:
+            return items
 
     def search_items(
         self, query: str, item_types: Iterable[str] | str = ("samples", "cells")
