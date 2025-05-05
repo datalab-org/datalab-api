@@ -83,9 +83,17 @@ class DatalabClient(BaseDatalabClient):
             A list of items of the given type.
 
         """
+        endpoint_type_map = {
+            "cells": "samples",
+            "samples": "samples",
+            "starting_materials": "starting-materials",
+            "equipment": "equipment",
+        }
+
         if item_type is None:
             item_type = "samples"
-        items_url = f"{self.datalab_api_url}/{item_type}"
+
+        items_url = f"{self.datalab_api_url}/{endpoint_type_map.get(item_type, item_type.replace('_', '-'))}"
         items_resp = self.session.get(items_url, follow_redirects=True)
         if items_resp.status_code != 200:
             raise RuntimeError(
