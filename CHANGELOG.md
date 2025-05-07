@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.12...HEAD)
+
+**Closed issues:**
+
+- get\_items method only works with samples [\#50](https://github.com/datalab-org/datalab-api/issues/50)
+
+## [v0.2.12](https://github.com/datalab-org/datalab-api/tree/v0.2.12) (2025-05-07)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.11...v0.2.12)
+
+**Merged pull requests:**
+
+- Fix for enumerating non-sample item endpoints [\#63](https://github.com/datalab-org/datalab-api/pull/63) ([ml-evs](https://github.com/ml-evs))
+- Use PEP 639 SPDX license in pyproject [\#62](https://github.com/datalab-org/datalab-api/pull/62) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.11](https://github.com/datalab-org/datalab-api/tree/v0.2.11) (2025-05-02)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.10...v0.2.11)
