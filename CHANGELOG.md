@@ -1,16 +1,20 @@
 # Changelog
 
-## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+## [v0.2.13](https://github.com/datalab-org/datalab-api/tree/v0.2.13) (2025-05-08)
 
-[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.12...HEAD)
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.12...v0.2.13)
 
-**Closed issues:**
+**Implemented enhancements:**
 
-- get\_items method only works with samples [\#50](https://github.com/datalab-org/datalab-api/issues/50)
+- Enable item search by refcode in the API [\#64](https://github.com/datalab-org/datalab-api/pull/64) ([ml-evs](https://github.com/ml-evs))
 
 ## [v0.2.12](https://github.com/datalab-org/datalab-api/tree/v0.2.12) (2025-05-07)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.11...v0.2.12)
+
+**Closed issues:**
+
+- get\_items method only works with samples [\#50](https://github.com/datalab-org/datalab-api/issues/50)
 
 **Merged pull requests:**
 
