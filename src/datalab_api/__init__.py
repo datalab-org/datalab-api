@@ -254,9 +254,11 @@ class DatalabClient(BaseDatalabClient):
             raise ValueError("Must provide only one of `item_id` or `refcode`.")
 
         if refcode is not None:
-            raise NotImplementedError("Searching by `refcode` is not yet implemented.")
+            item_url = f"{self.datalab_api_url}/items/{refcode}"
 
-        item_url = f"{self.datalab_api_url}/get-item-data/{item_id}"
+        else:
+            item_url = f"{self.datalab_api_url}/get-item-data/{item_id}"
+
         item_resp = self.session.get(item_url, follow_redirects=True)
 
         if item_resp.status_code != 200:
