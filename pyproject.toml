@@ -24,7 +24,7 @@ classifiers = [
 
 requires-python = ">=3.9"
 dependencies = [
-    "httpx ~= 0.27",                                 # better HTTP requests
+    "httpx ~= 0.28",                                 # better HTTP requests
     'bokeh ~= 2.4; platform_system != "Emscripten"', # interactive plots from datalab directly
     "rich ~= 13.0",                                  # nicer terminal output
     "numpy < 2",                                     # upper pin for numpy due to bad pins in bokeh
@@ -36,7 +36,7 @@ dev = [
     "pre-commit >= 3,< 5",
     "pytest ~= 8.0",
     "pytest-cov >= 5,< 7",
-    "respx ~= 0.21",
+    "respx ~= 0.22",
 ]
 
 docs = [
