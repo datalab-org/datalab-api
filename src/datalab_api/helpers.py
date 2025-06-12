@@ -1,4 +1,5 @@
 import random
+import warnings
 from pathlib import Path
 
 from datalab_api import DatalabClient, DuplicateItemError
@@ -12,6 +13,12 @@ def import_cheminventory(filename: Path, client: DatalabClient):
         https://github.com/the-grey-group/datalab/blob/43764fb494c2cc1bf9f7dc90c25594aeb79d5767/pydatalab/tasks.py#L350-L413
 
     """
+
+    warnings.warn(
+        DeprecationWarning(
+            "This helper is deprecated in favour of the full-fledged plugin at: https://github.com/datalab-industries/datalab-cheminventory-plugin"
+        )
+    )
 
     def _generate_random_startingmaterial_id():
         """Generate 'XX' + a random 15-length string for use as an id for starting materials
