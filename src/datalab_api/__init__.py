@@ -34,8 +34,8 @@ class DatalabClient(BaseDatalabClient):
 
         """
         info_url = f"{self.datalab_api_url}/info"
-        info_resp = self.session.get(info_url, follow_redirects=True)
-        self.info = info_resp.json()["data"]
+        info_data = self._get(info_url)
+        self.info = info_data["data"]
         return self.info
 
     def authenticate(self):
@@ -60,12 +60,8 @@ class DatalabClient(BaseDatalabClient):
 
         """
         block_info_url = f"{self.datalab_api_url}/info/blocks"
-        block_info_resp = self.session.get(block_info_url, follow_redirects=True)
-        if block_info_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to list block information at {block_info_url}: {block_info_resp.status_code=}."
-            )
-        self.block_info = block_info_resp.json()["data"]
+        block_info_data = self._get(block_info_url)
+        self.block_info = block_info_data["data"]
         return self.block_info
 
     def get_items(self, item_type: str | None = "samples") -> list[dict[str, Any]]:
@@ -90,14 +86,7 @@ class DatalabClient(BaseDatalabClient):
             item_type = "samples"
 
         items_url = f"{self.datalab_api_url}/{endpoint_type_map.get(item_type, item_type.replace('_', '-'))}"
-        items_resp = self.session.get(items_url, follow_redirects=True)
-        if items_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to list items with {item_type=} at {items_url}: {items_resp.status_code=}. Check the item type is correct."
-            )
-        items = items_resp.json()
-        if items["status"] != "success":
-            raise RuntimeError(f"Failed to list items at {items_url}: {items['status']!r}.")
+        items = self._get(items_url)
 
         if item_type in items:
             # Old approach
@@ -127,15 +116,7 @@ class DatalabClient(BaseDatalabClient):
         search_items_url = (
             f"{self.datalab_api_url}/search-items?query={query}&types={','.join(item_types)}"
         )
-        items_resp = self.session.get(search_items_url, follow_redirects=True)
-        if items_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to search items with {item_types=} at {search_items_url}: {items_resp.status_code=}"
-            )
-        items = items_resp.json()
-        if items["status"] != "success":
-            raise RuntimeError(f"Failed to list items at {search_items_url}: {items['status']!r}.")
-
+        items = self._get(search_items_url)
         return items["items"]
 
     def create_item(
@@ -173,29 +154,11 @@ class DatalabClient(BaseDatalabClient):
             new_item["collections"].append({"immutable_id": collection_immutable_id})
 
         create_item_url = f"{self.datalab_api_url}/new-sample/"
-        create_item_resp = self.session.post(
+        created_item = self._post(
             create_item_url,
             json={"new_sample_data": new_item, "generate_id_automatically": item_id is None},
-            follow_redirects=True,
         )
-        try:
-            created_item = create_item_resp.json()
-            if create_item_resp.status_code == 409:
-                raise DuplicateItemError(
-                    f"Item {item_id=} already exists at {create_item_url}: {created_item['status']!r}."
-                )
-            if created_item["status"] != "success":
-                if "DuplicateKeyError" in created_item["message"]:
-                    raise DuplicateItemError(
-                        f"Item {item_id=} already exists at {create_item_url}: {created_item['status']!r}."
-                    )
-                raise RuntimeError(f"Failed to create item at {create_item_url}: {created_item}.")
-            return created_item["sample_list_entry"]
-
-        except Exception as exc:
-            raise exc.__class__(
-                f"Failed to create item {item_id=} with data {item_data=} at {create_item_url}: {create_item_resp.status_code=}, {create_item_resp.content}. Check the item information is correct."
-            ) from exc
+        return created_item["sample_list_entry"]
 
     def update_item(self, item_id: str, item_data: dict[str, Any]) -> dict[str, Any]:
         """Update an item with the given item data.
@@ -210,20 +173,7 @@ class DatalabClient(BaseDatalabClient):
         """
         update_item_data = {"item_id": item_id, "data": item_data}
         update_item_url = f"{self.datalab_api_url}/save-item/"
-        update_item_resp = self.session.post(
-            update_item_url,
-            json=update_item_data,
-            follow_redirects=True,
-        )
-        if update_item_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to update item {item_id=} at {update_item_url}: {update_item_resp.status_code=}. Check the item information is correct."
-            )
-        updated_item = update_item_resp.json()
-        if updated_item["status"] != "success":
-            raise RuntimeError(
-                f"Failed to update item at {update_item_url}: {updated_item['status']!r}."
-            )
+        updated_item = self._post(update_item_url, json=update_item_data)
         return updated_item
 
     def get_item(
@@ -255,16 +205,7 @@ class DatalabClient(BaseDatalabClient):
         else:
             item_url = f"{self.datalab_api_url}/get-item-data/{item_id}"
 
-        item_resp = self.session.get(item_url, follow_redirects=True)
-
-        if item_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to find item {item_id=}, {refcode=} {item_url}: {item_resp.status_code=}. Check the item information is correct."
-            )
-
-        item = item_resp.json()
-        if item["status"] != "success":
-            raise RuntimeError(f"Failed to get item at {item_url}: {item['status']!r}.")
+        item = self._get(item_url)
 
         # Filter out any deleted blocks
         item["item_data"]["blocks_obj"] = {
@@ -324,15 +265,7 @@ class DatalabClient(BaseDatalabClient):
             "block_id": block_id,
             "save_to_db": False,
         }
-        block_resp = self.session.post(block_url, json=block_request, follow_redirects=True)
-        if block_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to find block {block_id=} for item {item_id=} at {block_url}: {block_resp.status_code=}. Check the block information is correct."
-            )
-
-        block = block_resp.json()
-        if block["status"] != "success":
-            raise RuntimeError(f"Failed to get block at {block_url}: {block['status']!r}.")
+        block = self._post(block_url, json=block_request)
         return block["new_block_data"]
 
     def upload_file(self, item_id: str, file_path: Path | str) -> dict[str, Any]:
@@ -354,21 +287,12 @@ class DatalabClient(BaseDatalabClient):
         upload_url = f"{self.datalab_api_url}/upload-file/"
         with open(file_path, "rb") as file:
             files = {"file": (file_path.name, file)}
-            upload_resp = self.session.post(
+            upload = self._post(
                 upload_url,
                 files=files,
                 data={"item_id": item_id, "replace_file": None},
-                follow_redirects=True,
+                expected_status=201,
             )
-        if upload_resp.status_code != 201:
-            raise RuntimeError(
-                f"Failed to upload file {file_path=} to item {item_id=} at {upload_url}: {upload_resp.status_code=}. Check the file information is correct."
-            )
-
-        upload = upload_resp.json()
-        if upload["status"] != "success":
-            raise RuntimeError(f"Failed to upload file at {upload_url}: {upload['status']!r}.")
-
         return upload
 
     def create_data_block(
@@ -418,12 +342,7 @@ class DatalabClient(BaseDatalabClient):
                     f"Not all IDs {file_ids=} are attached to item {item_id=}: {attached_file_ids=}"
                 )
 
-        block_resp = self.session.post(blocks_url, json=payload, follow_redirects=True)
-        if block_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to create block {block_type=} for item {item_id=}:\n{block_resp.text}"
-            )
-        block_data = block_resp.json()["new_block_obj"]
+        block_data = self._post(blocks_url, json=payload)["new_block_obj"]
 
         if file_ids:
             block_data = self._update_data_block(
@@ -480,11 +399,8 @@ class DatalabClient(BaseDatalabClient):
             "save_to_db": True,
         }
 
-        resp = self.session.post(blocks_url, json=payload, follow_redirects=True)
-        if resp.status_code != 200:
-            raise RuntimeError(f"Failed to update block {block_type=}:\n{resp.text}")
-
-        return resp.json()["new_block_data"]
+        resp = self._post(blocks_url, json=payload)
+        return resp["new_block_data"]
 
     def get_collection(self, collection_id: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Get a collection with a given ID.
@@ -498,16 +414,7 @@ class DatalabClient(BaseDatalabClient):
 
         """
         collection_url = f"{self.datalab_api_url}/collections/{collection_id}"
-        collection_resp = self.session.get(collection_url, follow_redirects=True)
-        if collection_resp.status_code != 200:
-            raise RuntimeError(
-                f"Failed to find collection {collection_id=} at {collection_url}: {collection_resp.status_code=}. Check the collection ID is correct."
-            )
-        collection = collection_resp.json()
-        if collection["status"] != "success":
-            raise RuntimeError(
-                f"Failed to get collection at {collection_url}: {collection['status']!r}."
-            )
+        collection = self._get(collection_url)
         return collection["data"], collection["child_items"]
 
     def create_collection(
@@ -527,16 +434,9 @@ class DatalabClient(BaseDatalabClient):
             new_collection = collection_data
         new_collection.update({"collection_id": collection_id, "type": "collections"})
 
-        collection_resp = self.session.put(
+        created_collection = self._put(
             collection_url,
             json={"data": new_collection},
-            follow_redirects=True,
+            expected_status=201,
         )
-
-        if collection_resp.status_code != 201 or collection_resp.json()["status"] != "success":
-            raise RuntimeError(
-                f"Failed to create collection {collection_id=} at {collection_url}: {collection_resp.status_code=}. Check the collection information is correct: {collection_resp.content}"
-            )
-
-        created_collection = collection_resp.json()["data"]
-        return created_collection
+        return created_collection["data"]
