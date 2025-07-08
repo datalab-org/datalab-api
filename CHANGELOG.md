@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.3.0...HEAD)
+
+**Closed issues:**
+
+- Show server errors more readily [\#69](https://github.com/datalab-org/datalab-api/issues/69)
+
+## [v0.3.0](https://github.com/datalab-org/datalab-api/tree/v0.3.0) (2025-07-08)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.13...v0.3.0)
+
+**Implemented enhancements:**
+
+- Add centralized request error handling to base client class [\#70](https://github.com/datalab-org/datalab-api/pull/70) ([ml-evs](https://github.com/ml-evs))
+
+**Merged pull requests:**
+
+- Refactor some functionality into utils module for external use [\#67](https://github.com/datalab-org/datalab-api/pull/67) ([ml-evs](https://github.com/ml-evs))
+- Update dependencies, deprecate cheminventory helper [\#65](https://github.com/datalab-org/datalab-api/pull/65) ([ml-evs](https://github.com/ml-evs))
+
 ## [v0.2.13](https://github.com/datalab-org/datalab-api/tree/v0.2.13) (2025-05-08)
 
 [Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.2.12...v0.2.13)
