@@ -18,6 +18,7 @@ class DatalabAPIError(Exception):
 class DuplicateItemError(DatalabAPIError):
     """Raised when the API operation would create a duplicate item."""
 
+
 __version__ = version("datalab-api")
 
 __all__ = ("BaseDatalabClient", "__version__")
@@ -230,30 +231,80 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             DuplicateItemError: For 409 conflicts or duplicate key errors
             DatalabAPIError: For other API errors
         """
-        # Handle HTTP status code errors
+        # Handle authentication errors first
+        if response.status_code in (401, 403):
+            auth_help = (
+                "Authentication failed. Please check your API key and ensure it's set correctly. "
+                "You can set your API key using the DATALAB_API_KEY environment variable or "
+                "the instance-specific <PREFIX>_DATALAB_API_KEY variable."
+            )
+            try:
+                error_data = response.json()
+                error_message = error_data.get("message", str(response.content))
+            except ValueError:
+                error_message = str(response.content)
+            raise DatalabAPIError(
+                f"HTTP {response.status_code} error at {url}: {error_message}. {auth_help}"
+            )
+
+        # Handle other HTTP status code errors
         if response.status_code != expected_status:
             try:
                 error_data = response.json()
                 error_message = error_data.get("message", str(response.content))
+            except ValueError:
+                error_message = str(response.content)
 
-                # Handle specific error cases
-                if response.status_code == 409:
-                    raise DuplicateItemError(f"Duplicate item error at {url}: {error_message}")
-
+            # Handle specific error cases with helpful messages
+            if response.status_code == 404:
+                raise DatalabAPIError(
+                    f"HTTP 404 Not Found at {url}: {error_message}. "
+                    "Please check the URL/endpoint is correct and the resource exists."
+                )
+            elif response.status_code == 409:
+                raise DuplicateItemError(f"Duplicate item error at {url}: {error_message}")
+            elif response.status_code == 429:
+                raise DatalabAPIError(
+                    f"HTTP 429 Too Many Requests at {url}: {error_message}. "
+                    "You are being rate limited. Please wait before making more requests."
+                )
+            elif response.status_code == 500:
+                server_info = ""
+                if hasattr(self, "_datalab_server_version"):
+                    server_info = f" (Server version: {self._datalab_server_version})"
+                raise DatalabAPIError(
+                    f"HTTP 500 Internal Server Error at {url}: {error_message}{server_info}. "
+                    "This is a server-side bug. Please report this issue to the datalab developers "
+                    "at https://github.com/datalab-org/datalab/issues with the full error message."
+                )
+            elif response.status_code == 502:
+                raise DatalabAPIError(
+                    f"HTTP 502 Bad Gateway at {url}: {error_message}. "
+                    "The server is having connectivity issues. Please try again later."
+                )
+            elif response.status_code == 503:
+                raise DatalabAPIError(
+                    f"HTTP 503 Service Unavailable at {url}: {error_message}. "
+                    "The datalab service is temporarily unavailable. Please report deployment "
+                    "issues to your datalab instance maintainer."
+                )
+            elif response.status_code == 504:
+                raise DatalabAPIError(
+                    f"HTTP 504 Gateway Timeout at {url}: {error_message}. "
+                    "The request timed out. Please try again or check if the operation is taking too long."
+                )
+            else:
                 raise DatalabAPIError(
                     f"HTTP {response.status_code} error at {url}: {error_message}"
-                )
-            except ValueError:
-                # Response is not JSON
-                raise DatalabAPIError(
-                    f"HTTP {response.status_code} error at {url}: {response.content}"
                 )
 
         # Parse JSON response
         try:
             data = response.json()
         except ValueError as e:
-            raise DatalabAPIError(f"Invalid JSON response from {url}: {e}")
+            raise DatalabAPIError(
+                f"Invalid JSON response from {url}: {e}. Response content: {response.content}"
+            )
 
         # Handle API-level status errors
         if isinstance(data, dict) and data.get("status") != "success":
