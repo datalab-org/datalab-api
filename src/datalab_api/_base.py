@@ -306,16 +306,6 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
                 f"Invalid JSON response from {url}: {e}. Response content: {response.content}"
             )
 
-        # Handle API-level status errors
-        if isinstance(data, dict) and data.get("status") != "success":
-            error_message = data.get("message", data.get("status", "Unknown error"))
-
-            # Check for duplicate key errors in the message
-            if "DuplicateKeyError" in error_message:
-                raise DuplicateItemError(f"Duplicate item error at {url}: {error_message}")
-
-            raise DatalabAPIError(f"API error at {url}: {error_message}")
-
         return data
 
     def _request(
