@@ -88,14 +88,14 @@ class DatalabClient(BaseDatalabClient):
         items_url = f"{self.datalab_api_url}/{endpoint_type_map.get(item_type, item_type.replace('_', '-'))}"
         items = self._get(items_url)
 
-        if item_type in items:
-            # Old approach
-            return items[item_type]
-        if "items" in items:
-            return items["items"]
+        if isinstance(items, dict):
+            if item_type in items:
+                # Old approach
+                return items[item_type]
+            if "items" in items:
+                return items["items"]
 
-        else:
-            return items
+        return items  # type: ignore
 
     def search_items(
         self, query: str, item_types: Iterable[str] | str = ("samples", "cells")
