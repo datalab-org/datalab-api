@@ -5,13 +5,9 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from ._base import BaseDatalabClient, __version__
+from ._base import BaseDatalabClient, DuplicateItemError, __version__
 
-__all__ = ("DatalabClient", "__version__")
-
-
-class DuplicateItemError(ValueError):
-    """Raised when the API operation would create a duplicate item."""
+__all__ = ("DatalabClient", "DuplicateItemError", "__version__")
 
 
 class DatalabClient(BaseDatalabClient):
