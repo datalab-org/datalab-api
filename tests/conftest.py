@@ -1,7 +1,61 @@
 import json
 import os
 
+import respx
+from httpx import Response
 from pytest import fixture
+
+
+@fixture
+def fake_api_url():
+    return "https://api.datalab.industries"
+
+
+@fixture
+def fake_ui_url():
+    return "https://ui.datalab.industries"
+
+
+@fixture
+def mocked_api(
+    fake_api_url,
+    fake_info_json,
+    fake_block_info_json,
+    fake_samples_json,
+    fake_sample_json,
+    fake_collection_json,
+):
+    with respx.mock(base_url=fake_api_url, assert_all_called=False) as respx_mock:
+        fake_api = respx_mock.get("/", name="api")
+        fake_api.return_value = Response(200, content="<!doctype html></html>")
+
+        fake_info_api = respx_mock.get("/info", name="info")
+        fake_info_api.return_value = Response(200, json=fake_info_json)
+
+        fake_block_info_api = respx_mock.get("/info/blocks", name="info-blocks")
+        fake_block_info_api.return_value = Response(200, json=fake_block_info_json)
+
+        fake_samples_api = respx_mock.get("/samples", name="samples")
+        fake_samples_api.return_value = Response(200, json=fake_samples_json)
+
+        fake_item_api = respx_mock.get("/get-item-data/KUVEKJ", name="sample-KUVEKJ")
+        fake_item_api.return_value = Response(200, json=fake_sample_json)
+
+        fake_collection_api = respx_mock.get(
+            "/collections/test_collection", name="collection-test_collection"
+        )
+        fake_collection_api.return_value = Response(200, json=fake_collection_json)
+
+        yield respx_mock
+
+
+@fixture
+def mocked_ui(fake_ui_url, fake_ui_html):
+    with respx.mock(base_url=fake_ui_url, assert_all_called=False) as respx_mock:
+        fake_ui = respx_mock.get("/", name="ui-redirect")
+        fake_ui.return_value = Response(200, content=fake_ui_html)
+
+        yield respx_mock
 
 
 @fixture
