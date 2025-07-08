@@ -252,6 +252,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             try:
                 error_data = response.json()
                 error_message = error_data.get("message", str(response.content))
+                error_message += f"\nFull JSON: {error_data}"
             except ValueError:
                 error_message = str(response.content)
 
@@ -273,9 +274,10 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
                 if hasattr(self, "_datalab_server_version"):
                     server_info = f" (Server version: {self._datalab_server_version})"
                 raise DatalabAPIError(
-                    f"HTTP 500 Internal Server Error at {url}: {error_message}{server_info}. "
-                    "This is a server-side bug. Please report this issue to the datalab developers "
-                    "at https://github.com/datalab-org/datalab/issues with the full error message."
+                    f"""HTTP 500 Internal Server Error at {url} {server_info}.
+This is likely a server-side bug. Please report this issue to the datalab developers at https://github.com/datalab-org/datalab/issues with the full error message below:
+
+\n{error_message}"""
                 )
             elif response.status_code == 502:
                 raise DatalabAPIError(

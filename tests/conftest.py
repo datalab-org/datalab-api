@@ -45,10 +45,25 @@ def mocked_api(
         fake_item_api = respx_mock.get("/get-item-data/KUVEKJ", name="sample-KUVEKJ")
         fake_item_api.return_value = Response(200, json=fake_sample_json)
 
+        fake_missing_item_api = respx_mock.get("/get-item-data/TEST", name="sample-missing-TEST")
+        fake_missing_item_api.return_value = Response(
+            404,
+            json={
+                "message": "No matching items for match={'item_id': 'TEST'} with current authorization",
+                "status": "error",
+            },
+        )
+
         fake_collection_api = respx_mock.get(
             "/collections/test_collection", name="collection-test_collection"
         )
         fake_collection_api.return_value = Response(200, json=fake_collection_json)
+
+        # Fake an unhandled exception
+        fake_internal_error = respx_mock.post("/save-item/", name="bad-save")
+        fake_internal_error.return_value = Response(
+            500, json={"message": "('type',)", "title": "KeyError"}
+        )
 
         yield respx_mock
 
