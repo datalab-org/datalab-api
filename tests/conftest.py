@@ -19,6 +19,7 @@ def fake_ui_url():
 @fixture
 def mocked_api(
     fake_api_url,
+    fake_user_json,
     fake_info_json,
     fake_block_info_json,
     fake_samples_json,
@@ -28,6 +29,9 @@ def mocked_api(
     with respx.mock(base_url=fake_api_url, assert_all_called=False) as respx_mock:
         fake_api = respx_mock.get("/", name="api")
         fake_api.return_value = Response(200, content="<!doctype html></html>")
+
+        fake_authentication = respx_mock.get("/get-current-user", name="current_user")
+        fake_authentication.return_value = Response(200, json=fake_user_json)
 
         fake_info_api = respx_mock.get("/info", name="info")
         fake_info_api.return_value = Response(200, json=fake_info_json)
@@ -244,6 +248,35 @@ def fake_block_info_json():
 
     return json.loads(
         '{"data":[{"attributes":{"accepted_file_extensions": [], "description":"Add a rich text comment to the document","name": "Comment", "version": "0.1.0"}, "id": "comment", "type": "block_type"}]}'
+    )
+
+
+@fixture
+def fake_user_json():
+    """Returns a mocked JSON response from the /get-current-user endpoint."""
+
+    return json.loads(
+        """
+{
+  "account_status": "active",
+  "contact_email": null,
+  "display_name": "Jane Doe",
+  "identities": [
+    {
+      "display_name": "Jane Doe",
+      "identifier": "1111111",
+      "identity_type": "github",
+      "name": "jane-doe",
+      "verified": true
+    }
+  ],
+  "immutable_id": "6574f788aabb227db8d1b14e",
+  "last_modified": null,
+  "managers": null,
+  "relationships": null,
+  "role": "user",
+  "type": "people"
+}"""
     )
 
 

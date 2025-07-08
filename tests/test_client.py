@@ -23,6 +23,9 @@ def test_sample_list(mocked_api, fake_api_url):
         assert mocked_api["info"].called
         assert mocked_api["info-blocks"].called
 
+        client.authenticate()
+        assert mocked_api["current_user"].called
+
         samples = client.get_items(display=True)
         assert mocked_api["samples"].called
         assert len(samples)
