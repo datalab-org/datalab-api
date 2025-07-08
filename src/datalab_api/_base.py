@@ -10,6 +10,14 @@ from rich.logging import RichHandler
 
 from .utils import AutoPrettyPrint
 
+
+class DatalabAPIError(Exception):
+    """Base exception for Datalab API errors."""
+
+
+class DuplicateItemError(DatalabAPIError):
+    """Raised when the API operation would create a duplicate item."""
+
 __version__ = version("datalab-api")
 
 __all__ = ("BaseDatalabClient", "__version__")
@@ -50,7 +58,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
 
         Parameters:
             datalab_api_url: The URL of the Datalab API.
-                TODO: If the URL of a datalab *UI* is provided, a request will be made to attempt
+                If the URL of a datalab *UI* is provided, a request will be made to attempt
                 to resolve the underlying API URL (e.g., `https://demo-api.datalab-org.io`
                 will 'redirect' to `https://demo-api.datalab-org.io`).
             log_level: The logging level to use for the client. Defaults to "WARNING".
@@ -204,3 +212,97 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     def __exit__(self, *_):
         if self._session is not None:
             self._session.close()
+
+    def _handle_response(
+        self, response: httpx.Response, url: str, expected_status: int = 200
+    ) -> dict[str, Any]:
+        """Handle HTTP response with consistent error handling.
+
+        Args:
+            response: The HTTP response object
+            url: The URL that was requested
+            expected_status: The expected HTTP status code (default: 200)
+
+        Returns:
+            The JSON response data
+
+        Raises:
+            DuplicateItemError: For 409 conflicts or duplicate key errors
+            DatalabAPIError: For other API errors
+        """
+        # Handle HTTP status code errors
+        if response.status_code != expected_status:
+            try:
+                error_data = response.json()
+                error_message = error_data.get("message", str(response.content))
+
+                # Handle specific error cases
+                if response.status_code == 409:
+                    raise DuplicateItemError(f"Duplicate item error at {url}: {error_message}")
+
+                raise DatalabAPIError(
+                    f"HTTP {response.status_code} error at {url}: {error_message}"
+                )
+            except ValueError:
+                # Response is not JSON
+                raise DatalabAPIError(
+                    f"HTTP {response.status_code} error at {url}: {response.content}"
+                )
+
+        # Parse JSON response
+        try:
+            data = response.json()
+        except ValueError as e:
+            raise DatalabAPIError(f"Invalid JSON response from {url}: {e}")
+
+        # Handle API-level status errors
+        if isinstance(data, dict) and data.get("status") != "success":
+            error_message = data.get("message", data.get("status", "Unknown error"))
+
+            # Check for duplicate key errors in the message
+            if "DuplicateKeyError" in error_message:
+                raise DuplicateItemError(f"Duplicate item error at {url}: {error_message}")
+
+            raise DatalabAPIError(f"API error at {url}: {error_message}")
+
+        return data
+
+    def _request(
+        self, method: str, url: str, expected_status: int = 200, **kwargs
+    ) -> dict[str, Any]:
+        """Make an HTTP request with consistent error handling.
+
+        Args:
+            method: HTTP method (GET, POST, PUT, etc.)
+            url: The URL to request
+            expected_status: The expected HTTP status code (default: 200)
+            **kwargs: Additional arguments to pass to the request
+
+        Returns:
+            The JSON response data
+        """
+        try:
+            response = self.session.request(method, url, follow_redirects=True, **kwargs)
+            return self._handle_response(response, url, expected_status)
+        except (httpx.RequestError, httpx.HTTPStatusError) as e:
+            raise DatalabAPIError(f"Request failed for {url}: {e}")
+
+    def _get(self, url: str, **kwargs) -> dict[str, Any]:
+        """Make a GET request with error handling."""
+        return self._request("GET", url, **kwargs)
+
+    def _post(self, url: str, expected_status: int = 200, **kwargs) -> dict[str, Any]:
+        """Make a POST request with error handling."""
+        return self._request("POST", url, expected_status, **kwargs)
+
+    def _put(self, url: str, expected_status: int = 201, **kwargs) -> dict[str, Any]:
+        """Make a PUT request with error handling."""
+        return self._request("PUT", url, expected_status, **kwargs)
+
+    def _patch(self, url: str, **kwargs) -> dict[str, Any]:
+        """Make a PATCH request with error handling."""
+        return self._request("PATCH", url, **kwargs)
+
+    def _delete(self, url: str, expected_status: int = 200, **kwargs) -> dict[str, Any]:
+        """Make a DELETE request with error handling."""
+        return self._request("DELETE", url, expected_status, **kwargs)
