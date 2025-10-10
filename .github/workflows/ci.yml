@@ -8,6 +8,8 @@ on:
 
 env:
   FORCE_COLOR: true
+  UV_VERSION: "0.8.x"
+  MIN_PYTHON_VERSION: "3.9"
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -21,15 +23,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Set up Python 3.9
+      - name: Set up Python ${{ env.MIN_PYTHON_VERSION }}
         uses: actions/setup-python@v6
         with:
-          python-version: "3.9"
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.6.x"
+          version: ${{ env.UV_VERSION }}
           enable-cache: true
 
       - name: Install dependencies
@@ -45,10 +47,10 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      max-parallel: 4
+      max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
 
     steps:
       - uses: actions/checkout@v5
@@ -61,7 +63,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: "0.6.x"
+          version: ${{ env.UV_VERSION }}
           enable-cache: true
 
       - name: Install dependencies
