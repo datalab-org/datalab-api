@@ -13,6 +13,8 @@ updates:
   ignore:
   - dependency-name: "bokeh"
     versions: [ ">=3" ]
+  - dependency-name: "numpy"
+    versions: [ ">=2" ]
   groups:
     python-dependencies:
       applies-to: version-updates
