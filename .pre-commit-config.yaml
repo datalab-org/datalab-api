@@ -27,6 +27,11 @@ repos:
         args: [--fix]
       - id: ruff-format
 
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: "0.8.24"
+    hooks:
+      - id: uv-lock
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.19.1
     hooks:
