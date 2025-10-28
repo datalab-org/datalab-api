@@ -157,6 +157,7 @@ class DatalabClient(BaseDatalabClient):
         created_item = self._post(
             create_item_url,
             json={"new_sample_data": new_item, "generate_id_automatically": item_id is None},
+            expected_status=201,
         )
         return created_item["sample_list_entry"]
 
