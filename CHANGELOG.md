@@ -2,11 +2,20 @@
 
 ## [Unreleased](https://github.com/datalab-org/datalab-api/tree/HEAD)
 
-[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.3.0...HEAD)
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.3.1...HEAD)
 
 **Closed issues:**
 
-- Show server errors more readily [\#69](https://github.com/datalab-org/datalab-api/issues/69)
+- `create_item` errors if status code is 200 [\#76](https://github.com/datalab-org/datalab-api/issues/76)
+
+## [v0.3.1](https://github.com/datalab-org/datalab-api/tree/v0.3.1) (2025-10-28)
+
+[Full Changelog](https://github.com/datalab-org/datalab-api/compare/v0.3.0...v0.3.1)
+
+**Merged pull requests:**
+
+- Fix the expected status code for item creation to 201 [\#77](https://github.com/datalab-org/datalab-api/pull/77) ([ml-evs](https://github.com/ml-evs))
+- Update CI dependencies and dependabot config [\#74](https://github.com/datalab-org/datalab-api/pull/74) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [v0.3.0](https://github.com/datalab-org/datalab-api/tree/v0.3.0) (2025-07-08)
 
@@ -15,6 +24,10 @@
 **Implemented enhancements:**
 
 - Add centralized request error handling to base client class [\#70](https://github.com/datalab-org/datalab-api/pull/70) ([ml-evs](https://github.com/ml-evs))
+
+**Closed issues:**
+
+- Show server errors more readily [\#69](https://github.com/datalab-org/datalab-api/issues/69)
 
 **Merged pull requests:**
 
