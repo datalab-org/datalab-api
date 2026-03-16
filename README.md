@@ -14,7 +14,7 @@ A simple Python API that can interact with [*datalab*](https://github.com/datala
 
 The idea here is to provide a set of utility functions and models for manipulating samples, cells, inventory, files, users and metadata associated with *datalab* entries in an automated way.
 
-This API may not expose all the functionality available in a given *datalab* instance, and the idea would be that this package can support multiple versions of the underlying [*datalab* REST API](https://docs.datalab-org.io/en/stable/rest_api/).
+This API may not expose all the functionality available in a given *datalab* instance, and the idea would be that this package can support multiple versions of the underlying [*datalab* REST API](https://docs.datalab-org.io).
 This means that the API is primarily *functional* in nature, as opposed to object-oriented, since *datalab* instances are free to use their own custom data models.
 The available schemas are reported as instance metadata and in the future object-oriented models may be able to be genereated directly in the client (so e.g., the returned data would be Python objects like `Sample` rather than JSON data).
 
