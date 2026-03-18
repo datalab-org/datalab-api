@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import warnings
+from getpass import getpass
 from importlib.metadata import version
 from typing import Any, Optional
 
@@ -36,6 +37,11 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     _session: Optional[httpx.Client] = None
     _headers: dict[str, str] = {}
     _timeout: httpx.Timeout = httpx.Timeout(10.0, read=60.0)
+
+    interactive: bool = True
+    """Whether the client is being used in an interactive context (e.g., CLI or notebook) or not.
+    Set to false if you want the script to error if no API key is found in the environment variables,
+    rather than prompting for input."""
 
     info: dict[str, Any] = {}
     """The `data` response from the `/info` endpoint of the Datalab API."""
@@ -189,9 +195,14 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
                 api_key = api_key.strip("'").strip('"')
 
             if api_key is None:
-                raise ValueError(
-                    f"No API key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
-                )
+                if self.interactive:
+                    api_key = getpass(
+                        f"Enter your API key for {self.datalab_api_url} (input will be hidden): "
+                    )
+                else:
+                    raise ValueError(
+                        f"No API key found in environment variables {key_env_var}/<prefix>_{key_env_var}."
+                    )
 
             self._api_key = api_key
 
