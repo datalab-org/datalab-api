@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Optional, Union
 
-from ._base import BaseDatalabClient, DuplicateItemError, DatalabAPIError, __version__
+from ._base import BaseDatalabClient, DatalabAPIError, DuplicateItemError, __version__
 
 __all__ = ("DatalabClient", "DuplicateItemError", "__version__")
 
