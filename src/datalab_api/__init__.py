@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Optional, Union
 
+from datalab_api._base import DatalabAPIError
 from ._base import BaseDatalabClient, DuplicateItemError, __version__
 
 __all__ = ("DatalabClient", "DuplicateItemError", "__version__")
@@ -148,6 +149,9 @@ class DatalabClient(BaseDatalabClient):
             try:
                 collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
             except RuntimeError:
+                self.create_collection(collection_id)
+                collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
+            except DatalabAPIError:
                 self.create_collection(collection_id)
                 collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
             new_item["collections"] = new_item.get("collections", [])
