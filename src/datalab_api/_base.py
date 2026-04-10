@@ -4,7 +4,7 @@ import re
 import warnings
 from getpass import getpass
 from importlib.metadata import version
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import httpx
 from rich.logging import RichHandler
@@ -42,6 +42,9 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     """Whether the client is being used in an interactive context (e.g., CLI or notebook) or not.
     Set to false if you want the script to error if no API key is found in the environment variables,
     rather than prompting for input."""
+
+    triggered_block_task_ids: set[str] = set()
+    """A set of block task IDs that have been triggered during the lifetime of this client instance."""
 
     info: dict[str, Any] = {}
     """The `data` response from the `/info` endpoint of the Datalab API."""
@@ -226,14 +229,14 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             self._session.close()
 
     def _handle_response(
-        self, response: httpx.Response, url: str, expected_status: int = 200
+        self, response: httpx.Response, url: str, expected_status: Union[int, list[int]] = 200
     ) -> dict[str, Any]:
         """Handle HTTP response with consistent error handling.
 
         Args:
             response: The HTTP response object
             url: The URL that was requested
-            expected_status: The expected HTTP status code (default: 200)
+            expected_status: The expected HTTP status code(s) (default: 200)
 
         Returns:
             The JSON response data
@@ -259,7 +262,10 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             )
 
         # Handle other HTTP status code errors
-        if response.status_code != expected_status:
+        if isinstance(expected_status, int):
+            expected_status = [expected_status]
+
+        if response.status_code not in expected_status:
             try:
                 error_data = response.json()
                 error_message = error_data.get("message", str(response.content))
@@ -321,8 +327,27 @@ This is likely a server-side bug. Please report this issue to the datalab develo
 
         return data
 
+    def check_tasks(self) -> set[str]:
+        """Check the status of any triggered tasks, returning any that have completed."""
+        if not self.triggered_block_task_ids:
+            return set()
+
+        completed_tasks = set()
+
+        for task_id in self.triggered_block_task_ids:
+            try:
+                response = self._get(f"{self.datalab_api_url}/blocks/{task_id}/status")
+                task_status = response["status"]
+                if task_status == "ready":
+                    self.triggered_block_task_ids.remove(task_id)
+                    completed_tasks.add(task_id)
+            except DatalabAPIError:
+                self.triggered_block_task_ids.remove(task_id)
+
+        return completed_tasks
+
     def _request(
-        self, method: str, url: str, expected_status: int = 200, **kwargs
+        self, method: str, url: str, expected_status: Union[int, list[int]] = 200, **kwargs
     ) -> dict[str, Any]:
         """Make an HTTP request with consistent error handling.
 
@@ -345,7 +370,9 @@ This is likely a server-side bug. Please report this issue to the datalab develo
         """Make a GET request with error handling."""
         return self._request("GET", url, **kwargs)
 
-    def _post(self, url: str, expected_status: int = 200, **kwargs) -> dict[str, Any]:
+    def _post(
+        self, url: str, expected_status: Union[int, list[int]] = 200, **kwargs
+    ) -> dict[str, Any]:
         """Make a POST request with error handling."""
         return self._request("POST", url, expected_status, **kwargs)
 
