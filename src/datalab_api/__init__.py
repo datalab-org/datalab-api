@@ -147,10 +147,7 @@ class DatalabClient(BaseDatalabClient):
         if collection_id is not None:
             try:
                 collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
-            except RuntimeError:
-                self.create_collection(collection_id)
-                collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
-            except DatalabAPIError:
+            except (RuntimeError, DatalabAPIError):
                 self.create_collection(collection_id)
                 collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
             new_item["collections"] = new_item.get("collections", [])
