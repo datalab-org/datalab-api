@@ -403,8 +403,18 @@ class DatalabClient(BaseDatalabClient):
             "save_to_db": True,
         }
 
-        resp = self._post(blocks_url, json=payload)
-        return resp["new_block_data"]
+        resp = self._post(blocks_url, expected_status=[200, 202], json=payload)
+
+        # If block is created synchronously, return the block data
+        if "new_block_data" in resp:
+            return resp["new_block_data"]
+
+        # Otherwise, we return the response which may contain information about the asynchronous block creation process
+        task_id = resp.get("task_id")
+        if task_id:
+            self.triggered_block_task_ids.add(task_id)
+
+        return resp
 
     def get_collection(self, collection_id: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         """Get a collection with a given ID.
