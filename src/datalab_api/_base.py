@@ -327,24 +327,24 @@ This is likely a server-side bug. Please report this issue to the datalab develo
 
         return data
 
-    def check_tasks(self) -> set[str]:
+    def check_tasks(self) -> tuple[set[str], set[str]]:
         """Check the status of any triggered tasks, returning any that have completed."""
-        if not self.triggered_block_task_ids:
-            return set()
-
         completed_tasks = set()
+        error_tasks = set()
 
         for task_id in self.triggered_block_task_ids:
             try:
                 response = self._get(f"{self.datalab_api_url}/blocks/{task_id}/status")
                 task_status = response["status"]
                 if task_status == "ready":
-                    self.triggered_block_task_ids.remove(task_id)
                     completed_tasks.add(task_id)
             except DatalabAPIError:
-                self.triggered_block_task_ids.remove(task_id)
+                error_tasks.add(task_id)
 
-        return completed_tasks
+        self.triggered_block_task_ids -= completed_tasks
+        self.triggered_block_task_ids -= error_tasks
+
+        return completed_tasks, error_tasks
 
     def _request(
         self, method: str, url: str, expected_status: Union[int, list[int]] = 200, **kwargs
