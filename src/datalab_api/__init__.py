@@ -5,6 +5,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Optional, Union
 
+import httpx
+
 from ._base import BaseDatalabClient, DatalabAPIError, DuplicateItemError, __version__
 
 __all__ = ("DatalabClient", "DuplicateItemError", "__version__")
@@ -285,6 +287,10 @@ class DatalabClient(BaseDatalabClient):
         if not file_path.exists():
             raise FileNotFoundError(f"File {file_path=} does not exist.")
 
+        # Use a longer read timeout for uploads, as the server may do
+        # significant processing before responding
+        upload_timeout = httpx.Timeout(self._timeout.connect, read=600.0, pool=self._timeout.pool)
+
         upload_url = f"{self.datalab_api_url}/upload-file/"
         with open(file_path, "rb") as file:
             files = {"file": (file_path.name, file)}
@@ -293,6 +299,7 @@ class DatalabClient(BaseDatalabClient):
                 files=files,
                 data={"item_id": item_id, "replace_file": None},
                 expected_status=201,
+                timeout=upload_timeout,
             )
         return upload
 

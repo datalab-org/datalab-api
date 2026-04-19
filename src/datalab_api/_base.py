@@ -360,8 +360,11 @@ This is likely a server-side bug. Please report this issue to the datalab develo
         Returns:
             The JSON response data
         """
+        timeout = kwargs.pop("timeout", None)
         try:
-            response = self.session.request(method, url, follow_redirects=True, **kwargs)
+            response = self.session.request(
+                method, url, follow_redirects=True, timeout=timeout, **kwargs
+            )
             return self._handle_response(response, url, expected_status)
         except (httpx.RequestError, httpx.HTTPStatusError) as e:
             raise DatalabAPIError(f"Request failed for {url}: {e}")
