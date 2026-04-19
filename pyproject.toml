@@ -16,6 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Information Technology",
     "Topic :: Other/Nonlisted Topic",
@@ -51,8 +52,6 @@ cli = [
     "typer ~= 0.9",       # command line interface
     "click-shell ~= 2.1", # REPL-like interface
 ]
-
-cheminventory-helper = ["pandas ~= 2.2", "openpyxl ~= 3.0"]
 
 all = ["datalab-api[dev,docs,cli]"]
 
