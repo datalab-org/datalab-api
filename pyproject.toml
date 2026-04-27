@@ -27,7 +27,7 @@ requires-python = ">=3.9"
 dependencies = [
     "httpx ~= 0.28",                                 # better HTTP requests
     'bokeh ~= 2.4; platform_system != "Emscripten"', # interactive plots from datalab directly
-    "rich >= 13,< 15",                                  # nicer terminal output
+    "rich >= 13,< 16",                                  # nicer terminal output
     "numpy < 2",                                     # upper pin for numpy due to bad pins in bokeh
 ]
 
