@@ -58,3 +58,16 @@ def test_collection_get(fake_api_url, mocked_api):
 
         collection, children = client.get_collection("test_collection", display=True)
         assert mocked_api["collection-test_collection"].called
+
+
+@respx.mock
+def test_group_get(fake_api_url, mocked_api):
+    with DatalabClient("https://api.datalab.industries") as client:
+        assert mocked_api["api"].called
+        assert mocked_api["info"].called
+        assert mocked_api["info-blocks"].called
+
+        group = client.get_group("test_group", display=True)
+        assert mocked_api["search-groups"].called
+        assert group["immutable_id"] == "67d0b01e03000cdc75134dbd"
+        assert group["group_id"] == "test_group"
