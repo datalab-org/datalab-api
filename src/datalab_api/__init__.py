@@ -151,6 +151,11 @@ class DatalabClient(BaseDatalabClient):
             new_item.pop("item_id")
 
         if collection_id is not None:
+            warnings.warn(
+                DeprecationWarning(
+                    "`collection_id` is deprecated, please use `collection_ids` instead."
+                )
+            )
             if collection_ids is None:
                 collection_ids = [collection_id]
 
