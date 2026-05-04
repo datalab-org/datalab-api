@@ -127,6 +127,8 @@ class DatalabClient(BaseDatalabClient):
         item_type: str = "samples",
         item_data: dict[str, Any] | None = None,
         collection_id: str | None = None,
+        collection_ids: str | Iterable[str] | None = None,  # alias for collection_id
+        group_ids: str | Iterable[str] | None = None,
     ) -> dict[str, Any]:
         """Create an item with a given ID and item data.
 
@@ -135,7 +137,9 @@ class DatalabClient(BaseDatalabClient):
             item_type: The type of item to create, e.g., 'samples', 'cells'.
             item_data: The data for the item.
             collection_id: The ID of the collection to add the item to (optional).
-                If such a collection does not exist, one will be made.
+                If such a collection does not exist, one will be made. Deprecated in favor of `collection_ids`.
+            collection_ids: The ID or IDs of the collection(s) to add the item to (optional).
+            group_ids: The ID or IDs of the group(s) to share the item with (optional).
 
         """
         new_item = {}
@@ -147,13 +151,29 @@ class DatalabClient(BaseDatalabClient):
             new_item.pop("item_id")
 
         if collection_id is not None:
-            try:
-                collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
-            except (RuntimeError, DatalabAPIError):
-                self.create_collection(collection_id)
-                collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
+            if collection_ids is None:
+                collection_ids = [collection_id]
+
+        if collection_ids:
             new_item["collections"] = new_item.get("collections", [])
-            new_item["collections"].append({"immutable_id": collection_immutable_id})
+            for collection_id in collection_ids:
+                try:
+                    collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
+                except (RuntimeError, DatalabAPIError):
+                    self.create_collection(collection_id)
+                    collection_immutable_id = self.get_collection(collection_id)[0]["immutable_id"]
+                new_item["collections"].append({"immutable_id": collection_immutable_id})
+
+        if group_ids:
+            # For now, we have to use the search groups endpoint
+            # until we add a get group by id endpoint that is locked down per user
+            new_item["groups"] = new_item.get("groups", [])
+            for group_id in group_ids:
+                try:
+                    group_immutable_id = self.get_group(group_id)["immutable_id"]
+                    new_item["groups"].append({"immutable_id": group_immutable_id})
+                except (RuntimeError, DatalabAPIError):
+                    pass
 
         create_item_url = f"{self.datalab_api_url}/new-sample/"
         created_item = self._post(
@@ -434,6 +454,32 @@ class DatalabClient(BaseDatalabClient):
         collection_url = f"{self.datalab_api_url}/collections/{collection_id}"
         collection = self._get(collection_url)
         return collection["data"], collection["child_items"]
+
+    def get_group(self, group_id: str) -> dict[str, Any]:
+        """Get a group with a given ID.
+
+        Uses the search groups endpoint under the hood,
+        so will only find groups that the user has access
+        to and that match the query.
+
+        Parameters:
+            group_id: The human-readable ID of the group to search for.
+
+        Returns:
+            A dictionary of group data for the group with the given ID.
+
+        Raises:
+            DatalabAPIError: If no group with the given ID is found.
+
+        """
+        group_url = f"{self.datalab_api_url}/search/groups?query={group_id}"
+        group_resp = self._get(group_url)
+        matching_groups = group_resp["data"]
+        if matching_groups:
+            matching_groups = [g for g in matching_groups if g.get("group_id") == group_id]
+            return matching_groups[0]
+
+        raise DatalabAPIError(f"No group found with ID {group_id!r}")
 
     def create_collection(
         self, collection_id: str, collection_data: dict | None = None

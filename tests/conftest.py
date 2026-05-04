@@ -65,6 +65,51 @@ def mocked_api(
             500, json={"message": "('type',)", "title": "KeyError"}
         )
 
+        fake_group_search_api = respx_mock.get(
+            "/search/groups?query=test_group", name="search-groups"
+        )
+        fake_group_search_api.return_value = Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "description": "test",
+                        "display_name": "Test",
+                        "group_id": "test2",
+                        "immutable_id": "6949ca813a5a8985defeb403",
+                        "last_modified": None,
+                        "managers": [],
+                        "members": None,
+                        "relationships": None,
+                        "type": "groups",
+                    },
+                    {
+                        "description": "test",
+                        "display_name": "testtest",
+                        "group_id": "test-test",
+                        "immutable_id": "696011270060765fbbeb868b",
+                        "last_modified": None,
+                        "managers": [],
+                        "members": None,
+                        "relationships": None,
+                        "type": "groups",
+                    },
+                    {
+                        "description": "Add longer description",
+                        "display_name": "Test group",
+                        "group_id": "test_group",
+                        "immutable_id": "67d0b01e03000cdc75134dbd",
+                        "last_modified": None,
+                        "managers": [],
+                        "members": None,
+                        "relationships": None,
+                        "type": "groups",
+                    },
+                ],
+                "status": "success",
+            },
+        )
+
         yield respx_mock
 
 
