@@ -296,12 +296,16 @@ class DatalabClient(BaseDatalabClient):
         block = self._post(block_url, json=block_request)
         return block["new_block_data"]
 
-    def upload_file(self, item_id: str, file_path: Path | str) -> dict[str, Any]:
+    def upload_file(
+        self, item_id: str, file_path: Path | str, replace_file_id: str | None = None
+    ) -> dict[str, Any]:
         """Upload a file to an item with a given ID.
 
         Parameters:
             item_id: The ID of the item to upload the file to.
             file_path: The path to the file to upload.
+            replace_file_id: The ID of an existing file to replace with the uploaded file, if any.
+                If provided, the new file will take the place of the old file in any blocks it was attached to.
 
         Returns:
             A dictionary of the uploaded file data.
@@ -322,7 +326,7 @@ class DatalabClient(BaseDatalabClient):
             upload = self._post(
                 upload_url,
                 files=files,
-                data={"item_id": item_id, "replace_file": None},
+                data={"item_id": item_id, "replace_file": replace_file_id},
                 expected_status=201,
                 timeout=upload_timeout,
             )
