@@ -99,6 +99,21 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         )
 
         self._find_api_key()
+        self._validate_user_agent()
+
+    def _validate_user_agent(self) -> None:
+        """Warn if this client's User-Agent is not in the server's known agent list."""
+        known_agents = self.info.get("attributes", {}).get("known_user_agents")
+        if not known_agents:
+            return
+        ua = self._headers.get("User-Agent", "")
+        if not any(ua.startswith(agent) for agent in known_agents):
+            warnings.warn(
+                f"User-Agent {ua!r} is not recognised by this datalab server. "
+                f"Versions saved via this client will not be attributed as agent saves. "
+                f"Known agents: {known_agents}",
+                stacklevel=3,
+            )
 
     def _detect_api_url(self) -> None:
         """Perform a handshake with the chosen URL to ascertain the correct API URL.
