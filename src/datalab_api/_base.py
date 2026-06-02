@@ -85,7 +85,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         self.log = logging.getLogger(__name__)
 
         self._http_client = httpx.Client
-        self._headers = {"User-Agent": f"Datalab Python API/{__version__}"}
+        self._headers = {"User-Agent": f"datalab-python-api/{__version__}"}
 
         self._detect_api_url()
 
