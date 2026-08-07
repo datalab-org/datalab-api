@@ -273,7 +273,13 @@ class DatalabClient(BaseDatalabClient):
                     for chunk in response.iter_bytes(chunk_size=1024):
                         file.write(chunk)
 
-    def get_block(self, item_id: str, block_id: str, block_data: dict[str, Any]) -> dict[str, Any]:
+    def get_block(
+        self,
+        item_id: str,
+        block_id: str,
+        block_data: dict[str, Any] | None = None,
+        event_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Get a block with a given ID and block data.
         Should be used in conjunction with `get_item` to load an existing block.
 
@@ -281,17 +287,25 @@ class DatalabClient(BaseDatalabClient):
             item_id: The ID of the item to search for.
             block_id: The ID of the block to search for.
             block_data: Any other block data required by the request.
+            event_data: Any block events to trigger.
 
         Returns:
             A dictionary of block data for the block with the given ID.
 
         """
-        block_url = f"{self.datalab_api_url}/update-block/"
+        block_url = f"{self.datalab_api_url}/blocks/"
+
+        if not block_data:
+            block_data = {}
+
+        block_data["item_id"] = item_id
+        block_data["block_id"] = block_id
+        if "blocktype" not in block_data:
+            raise ValueError("block_data must contain a 'blocktype' key.")
+
         block_request = {
             "block_data": block_data,
-            "item_id": item_id,
-            "block_id": block_id,
-            "save_to_db": False,
+            "event_data": event_data,
         }
         block = self._post(block_url, json=block_request)
         return block["new_block_data"]
