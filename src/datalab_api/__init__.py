@@ -424,10 +424,10 @@ class DatalabClient(BaseDatalabClient):
 
         if file_ids:
             if len(file_ids) > 1:
-                raise RuntimeError(
-                    "API does not currently support attaching multiple files in a block."
-                )
-            block_data["file_id"] = file_ids[0]
+                block_data["file_ids"] = file_ids
+            else:
+                block_data.pop("file_ids", None)
+                block_data["file_id"] = file_ids[0]
 
         blocks_url = f"{self.datalab_api_url}/update-block/"
         payload = {
