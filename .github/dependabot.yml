@@ -1,38 +1,42 @@
 version: 2
 updates:
-- package-ecosystem: pip
+- package-ecosystem: uv
   directory: "/"
   schedule:
-    interval: weekly
-    day: monday
-    time: "05:43"
-  open-pull-requests-limit: 50
+    interval: monthly
+    day: tuesday
+    time: "06:43"
   target-branch: main
   labels:
   - dependency_updates
-  ignore:
-  - dependency-name: "bokeh"
-    versions: [ ">=3" ]
-  - dependency-name: "numpy"
-    versions: [ ">=2" ]
+  versioning-strategy: "increase-if-necessary"
+  open-pull-requests-limit: 30
   groups:
-    python-dependencies:
+    python-production:
       applies-to: version-updates
       dependency-type: production
-    python-dependencies-dev:
+      update-types:
+        - minor
+        - patch
+    python-development:
       applies-to: version-updates
       dependency-type: development
-    python-dependencies-security:
-      applies-to: security-updates
-      dependency-type: production
+      update-types:
+        - major
+        - minor
+        - patch
+  ignore:
+    - dependency-name: "bokeh"
+      versions: [ ">=3" ]
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
-    interval: daily
+    day: monday
+    interval: monthly
     time: "05:33"
   target-branch: main
   labels:
-  - CI
+  - dependency_updates
   groups:
     github-actions:
       applies-to: version-updates
