@@ -1,5 +1,6 @@
 import pytest
 import respx
+from httpx import Response
 
 from datalab_api import DatalabClient
 from datalab_api._base import DatalabAPIError
@@ -71,3 +72,54 @@ def test_group_get(fake_api_url, mocked_api):
         assert mocked_api["search-groups"].called
         assert group["immutable_id"] == "67d0b01e03000cdc75134dbd"
         assert group["group_id"] == "test_group"
+
+
+@respx.mock
+def test_upload_file(fake_api_url, mocked_api, tmp_path):
+    """A new upload is stored by the server and reported as modified."""
+    fake_upload = mocked_api.post("/upload-file/", name="upload")
+    fake_upload.return_value = Response(
+        201,
+        json={
+            "status": "success",
+            "file_id": "6810ab6bb2b13a2be6c1e37f",
+            "file_information": {"name": "data.csv"},
+            "is_update": False,
+        },
+    )
+
+    test_file = tmp_path / "data.csv"
+    test_file.write_text("a,b\n1,2\n")
+
+    with DatalabClient(fake_api_url) as client:
+        result = client.upload_file(item_id="KUVEKJ", file_path=test_file)
+
+    assert mocked_api["upload"].called
+    assert result["file_id"] == "6810ab6bb2b13a2be6c1e37f"
+    assert result["not_modified"] is False
+
+
+@respx.mock
+def test_upload_file_not_modified(fake_api_url, mocked_api, tmp_path):
+    """When replacing a file whose content the server already holds, it
+    replies 304 with an empty body. That is a successful no-op, so the
+    existing file ID is returned with `not_modified` set, rather than
+    the empty body being treated as an error."""
+    fake_upload = mocked_api.post("/upload-file/", name="upload")
+    fake_upload.return_value = Response(304, content=b"")
+
+    test_file = tmp_path / "data.csv"
+    test_file.write_text("a,b\n1,2\n")
+
+    with DatalabClient(fake_api_url) as client:
+        result = client.upload_file(
+            item_id="KUVEKJ",
+            file_path=test_file,
+            replace_file_id="6810ab6bb2b13a2be6c1e37f",
+        )
+
+    assert mocked_api["upload"].called
+    assert result["status"] == "success"
+    assert result["file_id"] == "6810ab6bb2b13a2be6c1e37f"
+    assert result["is_update"] is True
+    assert result["not_modified"] is True
