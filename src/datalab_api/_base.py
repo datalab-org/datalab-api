@@ -317,10 +317,9 @@ This is likely a server-side bug. Please report this issue to the datalab develo
                     f"HTTP {response.status_code} error at {url}: {error_message}"
                 )
 
-        # 204 and 304 carry no entity body by definition (Werkzeug strips
-        # whatever payload the route passed to `jsonify`). Where such a
-        # status is expected, an empty body is the success case rather
-        # than a parse failure.
+        # 204 and 304 carry no entity body by definition
+        # Where such a status is expected, an empty body
+        # is the success case rather than a parse failure.
         if response.status_code in (204, 304):
             return {}
 
