@@ -322,7 +322,12 @@ class DatalabClient(BaseDatalabClient):
                 If provided, the new file will take the place of the old file in any blocks it was attached to.
 
         Returns:
-            A dictionary of the uploaded file data.
+            A dictionary of the uploaded file data, with an additional
+            `not_modified` key. If `replace_file_id` was provided and the
+            server already holds identical content (compared by hash), the
+            update is a no-op: the server replies `304 Not Modified` and
+            `not_modified` is `True`. Servers older than datalab#1744 never
+            report this, so `not_modified` is always `False` against them.
 
         """
         if isinstance(file_path, str):
@@ -341,10 +346,23 @@ class DatalabClient(BaseDatalabClient):
                 upload_url,
                 files=files,
                 data={"item_id": item_id, "replace_file": replace_file_id},
-                expected_status=201,
+                expected_status=[201, 304],
                 timeout=upload_timeout,
             )
-        return upload
+
+        # A 201 always carries a body describing the stored file, so an
+        # empty dict here can only be the 304: the server compared hashes,
+        # found it already holds this content, and made no update. That is
+        # a success, so report it rather than raising.
+        if not upload:
+            return {
+                "status": "success",
+                "file_id": replace_file_id,
+                "is_update": True,
+                "not_modified": True,
+            }
+
+        return {**upload, "not_modified": False}
 
     def create_data_block(
         self,
