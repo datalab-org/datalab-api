@@ -58,7 +58,22 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     min_server_version: tuple[int, int, int] = (0, 1, 0)
     """The minimum supported server version that this client supports."""
 
-    def __init__(self, datalab_api_url: str, log_level: str = "WARNING"):
+    elevate_permissions: bool = False
+    """Whether to make requests in datalab's admin super-user mode, i.e., with
+    access to items belonging to other users.
+
+    This only has an effect if the API key in use belongs to an admin account;
+    for any other account the server ignores the request and normal permissions
+    apply. Can be set at any point in the client's lifetime to toggle the
+    behaviour.
+    """
+
+    def __init__(
+        self,
+        datalab_api_url: str,
+        log_level: str = "WARNING",
+        elevate_permissions: bool = False,
+    ):
         """Creates an authenticated client.
 
         An API key is required to authenticate requests. The client will attempt to load it from a
@@ -72,10 +87,14 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
                 to resolve the underlying API URL (e.g., `https://demo-api.datalab-org.io`
                 will 'redirect' to `https://demo-api.datalab-org.io`).
             log_level: The logging level to use for the client. Defaults to "WARNING".
+            elevate_permissions: Whether to read items belonging to other users, using
+                datalab's admin super-user mode. Requires the API key in use to belong
+                to an admin account; ignored by the server otherwise. Defaults to False.
 
 
         """
 
+        self.elevate_permissions = elevate_permissions
         self.datalab_api_url = datalab_api_url
         if not self.datalab_api_url:
             raise ValueError("No Datalab API URL provided.")
@@ -367,6 +386,7 @@ This is likely a server-side bug. Please report this issue to the datalab develo
             The JSON response data
         """
         timeout = kwargs.pop("timeout", None)
+        kwargs = self._apply_elevation(method, kwargs)
         try:
             response = self.session.request(
                 method, url, follow_redirects=True, timeout=timeout, **kwargs
@@ -374,6 +394,22 @@ This is likely a server-side bug. Please report this issue to the datalab develo
             return self._handle_response(response, url, expected_status)
         except (httpx.RequestError, httpx.HTTPStatusError) as e:
             raise DatalabAPIError(f"Request failed for {url}: {e}")
+
+    def _apply_elevation(self, method: str, kwargs: dict[str, Any]) -> dict[str, Any]:
+        """Add datalab's super-user flag to a read when running elevated.
+
+        datalab treats an admin as an ordinary user on GET requests unless the
+        request opts in with `sudo=1`, but grants them full access on writes
+        with no opt-in at all — so only reads need the flag. Any `params` the
+        caller supplied are preserved.
+        """
+        if not self.elevate_permissions or method.upper() != "GET":
+            return kwargs
+
+        params = dict(kwargs.pop("params", None) or {})
+        params.setdefault("sudo", "1")
+        kwargs["params"] = params
+        return kwargs
 
     def _get(self, url: str, **kwargs) -> dict[str, Any]:
         """Make a GET request with error handling."""

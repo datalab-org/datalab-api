@@ -75,6 +75,31 @@ with DatalabClient("https://demo-api.datalab-org.io") as client:
 
 ```
 
+### Elevated (admin) permissions
+
+By default a client can only see items its account owns or has been shared on.
+Admins can opt in to datalab's super-user mode to read items belonging to other users, by passing `elevate_permissions`:
+
+```python
+with DatalabClient(
+    "https://demo-api.datalab-org.io", elevate_permissions=True
+) as client:
+    # Finds the item even if it belongs to another user
+    item = client.get_item(item_id="someone-elses-sample")
+```
+
+This sends datalab's `sudo=1` flag on read requests.
+It requires the API key in use to belong to an **admin** account; for any other account the server ignores
+it and normal permissions apply.
+
+The attribute can also be toggled at any point in the client's lifetime:
+
+```python
+client.elevate_permissions = True
+```
+
+Note that objects created while elevated (e.g. uploaded files) are still recorded as belonging to the admin's own account, not the item owner's.
+
 ### Command-line interface (CLI)
 
 There is also an EXPERIMENTAL CLI, exposed via the `datalab` command.

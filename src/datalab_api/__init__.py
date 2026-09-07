@@ -268,8 +268,13 @@ class DatalabClient(BaseDatalabClient):
             if Path(f["name"]).exists():
                 warnings.warn(f"Will not overwrite existing file {f['name']}")
                 continue
+            # This streams directly from the session rather than going through
+            # `_request`, so the elevation flag has to be applied by hand.
+            stream_kwargs = self._apply_elevation("GET", {})
             with open(f["name"], "wb") as file:
-                with self.session.stream("GET", url, follow_redirects=True) as response:
+                with self.session.stream(
+                    "GET", url, follow_redirects=True, **stream_kwargs
+                ) as response:
                     for chunk in response.iter_bytes(chunk_size=1024):
                         file.write(chunk)
 

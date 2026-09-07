@@ -123,3 +123,49 @@ def test_upload_file_not_modified(fake_api_url, mocked_api, tmp_path):
     assert result["file_id"] == "6810ab6bb2b13a2be6c1e37f"
     assert result["is_update"] is True
     assert result["not_modified"] is True
+
+
+def test_elevate_permissions_adds_sudo_to_reads(mocked_api, fake_api_url):
+    """An elevated client sends `sudo=1` on GETs (and nothing else)."""
+    with DatalabClient(fake_api_url, elevate_permissions=True) as client:
+        client.get_item("KUVEKJ")
+
+    request = mocked_api["sample-KUVEKJ"].calls.last.request
+    assert request.url.params.get("sudo") == "1"
+
+
+def test_elevate_permissions_is_toggleable(mocked_api, fake_api_url):
+    """`elevate_permissions` can be flipped after construction."""
+    with DatalabClient(fake_api_url) as client:
+        client.get_item("KUVEKJ")
+        assert "sudo" not in mocked_api["sample-KUVEKJ"].calls.last.request.url.params
+
+        client.elevate_permissions = True
+        client.get_item("KUVEKJ")
+        assert mocked_api["sample-KUVEKJ"].calls.last.request.url.params.get("sudo") == "1"
+
+
+def test_elevate_permissions_not_sent_on_writes(mocked_api, fake_api_url):
+    """datalab grants admins full write access with no opt-in, so the flag
+    must not leak onto non-GET requests."""
+    with DatalabClient(fake_api_url, elevate_permissions=True) as client:
+        with pytest.raises(DatalabAPIError):
+            # `/save-item/` is mocked as a 500; we only care about the request
+            client.update_item("KUVEKJ", {"description": "test"})
+
+    request = mocked_api["bad-save"].calls.last.request
+    assert request.method == "POST"
+    assert "sudo" not in request.url.params
+
+
+def test_elevate_permissions_preserves_existing_params(mocked_api, fake_api_url):
+    """A caller-supplied query string must survive elevation."""
+    with DatalabClient(fake_api_url, elevate_permissions=True) as client:
+        client._get(
+            f"{client.datalab_api_url}/get-item-data/KUVEKJ",
+            params={"load_blocks": "false"},
+        )
+
+    request = mocked_api["sample-KUVEKJ"].calls.last.request
+    assert request.url.params.get("load_blocks") == "false"
+    assert request.url.params.get("sudo") == "1"
