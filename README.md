@@ -63,7 +63,6 @@ This package implements basic functionality for displaying and manipulating entr
 from datalab_api import DatalabClient
 
 with DatalabClient("https://demo-api.datalab-org.io") as client:
-
     # List all items of a given type
     items = client.get_items()
 
@@ -72,7 +71,6 @@ with DatalabClient("https://demo-api.datalab-org.io") as client:
 
     # Upload a file to an item
     file_response = client.upload_file(filepath="my_echem_data.mpr", item_id="test")
-
 ```
 
 ### Elevated (admin) permissions
@@ -81,9 +79,7 @@ By default a client can only see items its account owns or has been shared on.
 Admins can opt in to datalab's super-user mode to read items belonging to other users, by passing `elevate_permissions`:
 
 ```python
-with DatalabClient(
-    "https://demo-api.datalab-org.io", elevate_permissions=True
-) as client:
+with DatalabClient("https://demo-api.datalab-org.io", elevate_permissions=True) as client:
     # Finds the item even if it belongs to another user
     item = client.get_item(item_id="someone-elses-sample")
 ```

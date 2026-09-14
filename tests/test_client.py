@@ -1,3 +1,5 @@
+import re
+
 import pytest
 import respx
 from httpx import Response
@@ -40,7 +42,9 @@ def test_sample_operations(mocked_api, fake_api_url):
         # Check that the full server error message is shown for a missing item
         with pytest.raises(
             DatalabAPIError,
-            match="No matching items for match={'item_id': 'TEST'} with current authorization",
+            match=re.escape(
+                "No matching items for match={'item_id': 'TEST'} with current authorization"
+            ),
         ):
             client.get_item("TEST", display=True)
         assert mocked_api["sample-missing-TEST"].called
@@ -57,7 +61,7 @@ def test_collection_get(fake_api_url, mocked_api):
         assert mocked_api["info"].called
         assert mocked_api["info-blocks"].called
 
-        collection, children = client.get_collection("test_collection", display=True)
+        _collection, _children = client.get_collection("test_collection", display=True)
         assert mocked_api["collection-test_collection"].called
 
 
