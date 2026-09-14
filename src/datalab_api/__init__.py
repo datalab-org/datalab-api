@@ -3,11 +3,15 @@ from __future__ import annotations
 import warnings
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import httpx
 
 from ._base import BaseDatalabClient, DatalabAPIError, DuplicateItemError, __version__
+from .utils import networkx_from_item_graph
+
+if TYPE_CHECKING:
+    import networkx as nx
 
 __all__ = ("DatalabClient", "DuplicateItemError", "__version__")
 
@@ -252,6 +256,59 @@ class DatalabClient(BaseDatalabClient):
                 item["item_data"]["blocks_obj"][block_id] = block_data
 
         return item["item_data"]
+
+    def get_item_graph(
+        self,
+        item_id: str | None = None,
+        collection_id: str | None = None,
+        hide_collections: bool | None = None,
+        max_depth: int | None = None,
+        as_networkx: bool = False,
+    ) -> dict[str, list[dict[str, Any]]] | nx.DiGraph:
+        """Get the graph of relationships between items.
+
+        With no arguments, the global item graph for all items visible to the
+        authenticated user is returned. If `item_id` is provided, only the
+        neighbourhood of that item is returned.
+
+        Parameters:
+            item_id: The ID of the item to centre the graph on (optional).
+                If not provided, the global graph is returned.
+            collection_id: Restrict the global graph to members of this
+                collection (optional; ignored when `item_id` is provided).
+            hide_collections: Whether to omit collections as nodes in the graph.
+                If `None`, the server default is used (hidden, for recent versions).
+            max_depth: The number of relationship hops to follow from `item_id`.
+                If `None`, the server default is used (1). Requires a recent
+                version of datalab.
+            as_networkx: Whether to return the graph as a `networkx.DiGraph`
+                (requires the optional `networkx` dependency).
+
+        Returns:
+            A dictionary with `nodes` and `edges` keys, in the Cytoscape.js
+            format used by the datalab UI, or a `networkx.DiGraph` if
+            `as_networkx` is `True`.
+
+        """
+        graph_url = f"{self.datalab_api_url}/item-graph"
+        if item_id is not None:
+            graph_url += f"/{item_id}"
+
+        params: dict[str, Any] = {}
+        if collection_id is not None:
+            params["collection_id"] = collection_id
+        if hide_collections is not None:
+            params["hide_collections"] = str(hide_collections).lower()
+        if max_depth is not None:
+            params["max_depth"] = max_depth
+
+        graph = self._get(graph_url, params=params)
+        graph = {"nodes": graph.get("nodes", []), "edges": graph.get("edges", [])}
+
+        if as_networkx:
+            return networkx_from_item_graph(graph)
+
+        return graph
 
     def get_item_files(self, item_id: str) -> None:
         """Download all the files for a given item and save them locally

@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.pretty import pprint
 from rich.table import Table
 
-__all__ = ("AutoPrettyPrint", "bokeh_from_json", "pretty_displayer")
+__all__ = ("AutoPrettyPrint", "bokeh_from_json", "networkx_from_item_graph", "pretty_displayer")
 
 
 def pretty_displayer(method):
@@ -77,3 +77,39 @@ def bokeh_from_json(block_data, show=True):
         bokeh_show(curdoc().roots[0])
 
     return curdoc()
+
+
+def networkx_from_item_graph(graph):
+    """Convert an item graph, as returned by the `/item-graph` endpoint,
+    into a `networkx.DiGraph`.
+
+    Nodes are keyed by their ID (item ID, or `"Collection: <collection_id>"`
+    for collections), with all other node data stored as attributes.
+    Edges point from parent to child.
+
+    Parameters:
+        graph: A dictionary with `nodes` and `edges` keys in Cytoscape.js format.
+
+    Returns:
+        A `networkx.DiGraph` of the item relationships.
+
+    """
+    try:
+        import networkx as nx
+    except ImportError as exc:
+        raise ImportError(
+            "The `networkx` package is required to create a graph; "
+            "install it with `pip install datalab-api[networkx]`."
+        ) from exc
+
+    nx_graph = nx.DiGraph()
+    for node in graph.get("nodes", []):
+        data = dict(node["data"])
+        nx_graph.add_node(data.pop("id"), **data)
+    for edge in graph.get("edges", []):
+        data = dict(edge["data"])
+        source, target = data.pop("source"), data.pop("target")
+        data.pop("id", None)
+        nx_graph.add_edge(source, target, **data)
+
+    return nx_graph
