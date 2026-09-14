@@ -275,8 +275,7 @@ class DatalabClient(BaseDatalabClient):
                 with self.session.stream(
                     "GET", url, follow_redirects=True, **stream_kwargs
                 ) as response:
-                    for chunk in response.iter_bytes(chunk_size=1024):
-                        file.write(chunk)
+                    file.writelines(response.iter_bytes(chunk_size=1024))
 
     def get_block(
         self,

@@ -4,7 +4,7 @@ import re
 import warnings
 from getpass import getpass
 from importlib.metadata import version
-from typing import Any, Optional, Union
+from typing import Any
 
 import httpx
 from rich.logging import RichHandler
@@ -33,8 +33,8 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     readable by users.
     """
 
-    _api_key: Optional[str] = None
-    _session: Optional[httpx.Client] = None
+    _api_key: str | None = None
+    _session: httpx.Client | None = None
     _headers: dict[str, str]
     _timeout: httpx.Timeout = httpx.Timeout(10.0, read=60.0)
 
@@ -52,7 +52,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     block_info: list[dict[str, Any]] = []
     """The `data` response from the `/info/blocks` endpoint of the Datalab API."""
 
-    bad_server_versions: Optional[tuple[tuple[int, int, int]]] = ((0, 2, 0),)
+    bad_server_versions: tuple[tuple[int, int, int]] | None = ((0, 2, 0),)
     """Any known server versions that are not supported by this client."""
 
     min_server_version: tuple[int, int, int] = (0, 1, 0)
@@ -113,9 +113,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
 
         self._datalab_api_versions: list[str] = self.info["attributes"]["available_api_versions"]
         self._datalab_server_version: str = self.info["attributes"]["server_version"]
-        self._datalab_instance_prefix: Optional[str] = self.info["attributes"].get(
-            "identifier_prefix"
-        )
+        self._datalab_instance_prefix: str | None = self.info["attributes"].get("identifier_prefix")
 
         self._find_api_key()
 
@@ -203,7 +201,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         if self._api_key is None:
             key_env_var = "DATALAB_API_KEY"
 
-            api_key: Optional[str] = None
+            api_key: str | None = None
 
             # probe the prefixed environment variable first
             if self._datalab_instance_prefix is not None:
@@ -248,7 +246,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             self._session.close()
 
     def _handle_response(
-        self, response: httpx.Response, url: str, expected_status: Union[int, list[int]] = 200
+        self, response: httpx.Response, url: str, expected_status: int | list[int] = 200
     ) -> dict[str, Any]:
         """Handle HTTP response with consistent error handling.
 
@@ -372,7 +370,7 @@ This is likely a server-side bug. Please report this issue to the datalab develo
         return completed_tasks, error_tasks
 
     def _request(
-        self, method: str, url: str, expected_status: Union[int, list[int]] = 200, **kwargs
+        self, method: str, url: str, expected_status: int | list[int] = 200, **kwargs
     ) -> dict[str, Any]:
         """Make an HTTP request with consistent error handling.
 
@@ -415,9 +413,7 @@ This is likely a server-side bug. Please report this issue to the datalab develo
         """Make a GET request with error handling."""
         return self._request("GET", url, **kwargs)
 
-    def _post(
-        self, url: str, expected_status: Union[int, list[int]] = 200, **kwargs
-    ) -> dict[str, Any]:
+    def _post(self, url: str, expected_status: int | list[int] = 200, **kwargs) -> dict[str, Any]:
         """Make a POST request with error handling."""
         return self._request("POST", url, expected_status, **kwargs)
 

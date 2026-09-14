@@ -1,5 +1,6 @@
+import random
 import time
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from click_shell import make_click_shell
@@ -23,7 +24,7 @@ console = Console()
 @app.callback(invoke_without_command=True)
 def launch(
     ctx: typer.Context,
-    instance_url: Annotated[Optional[str], typer.Argument()] = None,
+    instance_url: Annotated[str | None, typer.Argument()] = None,
     animate_intro: bool = True,
 ):
     """Makes an interactive REPL-style interface using the subcommands below."""
@@ -68,7 +69,7 @@ def launch(
 
 def _get_client(
     ctx: typer.Context,
-    instance_url: Optional[str] = None,
+    instance_url: str | None = None,
     log_level: str = "WARNING",
 ):
     client = getattr(ctx, "client", None)
@@ -91,7 +92,7 @@ def _get_instance_url(ctx: typer.Context):
 @app.command()
 def authenticate(
     ctx: typer.Context,
-    instance_url: Annotated[Optional[str], typer.Argument()] = None,
+    instance_url: Annotated[str | None, typer.Argument()] = None,
     log_level: str = "WARNING",
 ):
     client = _get_client(ctx, instance_url, log_level)
@@ -105,7 +106,7 @@ def authenticate(
 def get(
     ctx: typer.Context,
     item_type: str,
-    instance_url: Annotated[Optional[str], typer.Argument()] = None,
+    instance_url: Annotated[str | None, typer.Argument()] = None,
     page_limit: int = 10,
     log_level: str = "WARNING",
 ):
@@ -143,8 +144,6 @@ def info(ctx: typer.Context, instance_url: str, log_level: str = "WARNING"):
 
 def _make_fancy_intro(animate=True):
     """Bit of fun, make an animated datalab logo intro to the CLI."""
-    import random
-
     intro_ascii = """
               oooo              o8              o888             oooo
            ooooo888    ooooooo o888oo  ooooooo    888   ooooooo    888ooooo

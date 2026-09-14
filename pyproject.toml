@@ -80,7 +80,7 @@ follow_imports = "skip"
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -98,6 +98,7 @@ ignore = [
     "C419",
     "C901",    # function too complex
     "COM812",  # trailing comma missing
+    "CPY001",  # missing copyright notice
     "D",
     "D205",
     "DTZ",     # datetime-tz-now
@@ -122,6 +123,7 @@ ignore = [
     "PERF401",
     "PGH003",
     "PGH004",
+    "PLC0415", # import not at top-level (used for lazy optional deps)
     "PLR",     # pylint-refactor
     "PLW0602",
     "PLW0603",
@@ -159,7 +161,7 @@ ignore = [
     "UP031",
 ]
 pydocstyle.convention = "numpy"
-isort.known-first-party = ["jobflow_remote"]
+isort.known-first-party = ["datalab_api"]
 isort.split-on-trailing-comma = false
 fixable = ["A", "B", "C", "D", "E", "F", "I", "PT", "RUF"]
 unfixable = []
