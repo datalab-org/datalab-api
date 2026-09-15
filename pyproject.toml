@@ -71,6 +71,7 @@ documentation = "https://datalab-python-api.readthedocs.io"
 changelog = "https://github.com/datalab-org/datalab-api/releases"
 
 [tool.uv]
+required-version = ">=0.9.8"  # first release supporting exclude-dependencies; also used by setup-uv in CI
 exclude-dependencies = ["httpx", "httpcore"]
 cache-keys = [{ git = true }]
 

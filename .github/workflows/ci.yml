@@ -8,7 +8,6 @@ on:
 
 env:
   FORCE_COLOR: true
-  UV_VERSION: "0.8.x"
   MIN_PYTHON_VERSION: "3.10"
 
 concurrency:
@@ -31,7 +30,6 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: ${{ env.UV_VERSION }}
           enable-cache: true
 
       - name: Install dependencies
@@ -63,7 +61,6 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          version: ${{ env.UV_VERSION }}
           enable-cache: true
 
       - name: Install dependencies
