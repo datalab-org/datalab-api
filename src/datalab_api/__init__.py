@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-import httpx
+import httpx2
 
 from ._base import BaseDatalabClient, DatalabAPIError, DuplicateItemError, __version__
 from .utils import networkx_from_item_graph
@@ -398,7 +398,7 @@ class DatalabClient(BaseDatalabClient):
 
         # Use a longer read timeout for uploads, as the server may do
         # significant processing before responding
-        upload_timeout = httpx.Timeout(self._timeout.connect, read=600.0, pool=self._timeout.pool)
+        upload_timeout = httpx2.Timeout(self._timeout.connect, read=600.0, pool=self._timeout.pool)
 
         upload_url = f"{self.datalab_api_url}/upload-file/"
         with open(file_path, "rb") as file:

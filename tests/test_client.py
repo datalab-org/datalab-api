@@ -2,7 +2,7 @@ import re
 
 import pytest
 import respx
-from httpx import Response
+from httpx2 import Response
 
 from datalab_api import DatalabClient
 from datalab_api._base import DatalabAPIError
