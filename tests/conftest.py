@@ -110,6 +110,39 @@ def mocked_api(
             },
         )
 
+        item_graph_json = {
+            "status": "success",
+            "nodes": [
+                {"data": {"id": "parent", "name": "Parent", "type": "samples", "special": False}},
+                {"data": {"id": "KUVEKJ", "name": "Child", "type": "samples", "special": True}},
+                {"data": {"id": "sibling", "name": "Sibling", "type": "cells", "special": False}},
+            ],
+            "edges": [
+                {
+                    "data": {
+                        "id": "parent->KUVEKJ",
+                        "source": "parent",
+                        "target": "KUVEKJ",
+                        "value": 1,
+                    }
+                },
+                {
+                    "data": {
+                        "id": "parent->sibling",
+                        "source": "parent",
+                        "target": "sibling",
+                        "value": 1,
+                    }
+                },
+            ],
+        }
+        respx_mock.get("/item-graph", name="item-graph").return_value = Response(
+            200, json=item_graph_json
+        )
+        respx_mock.get("/item-graph/KUVEKJ", name="item-graph-KUVEKJ").return_value = Response(
+            200, json=item_graph_json
+        )
+
         yield respx_mock
 
 

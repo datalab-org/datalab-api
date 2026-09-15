@@ -35,6 +35,10 @@ plotting = [
     "numpy < 2",                                     # upper pin for numpy due to bad pins in bokeh
 ]
 
+networkx = [
+    "networkx >= 3",                                 # build graphs of item relationships
+]
+
 dev = [
     "pre-commit >= 3,< 5",
     "pytest ~= 8.0",

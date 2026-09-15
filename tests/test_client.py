@@ -173,3 +173,32 @@ def test_elevate_permissions_preserves_existing_params(mocked_api, fake_api_url)
     request = mocked_api["sample-KUVEKJ"].calls.last.request
     assert request.url.params.get("load_blocks") == "false"
     assert request.url.params.get("sudo") == "1"
+
+
+def test_get_item_graph(mocked_api, fake_api_url):
+    with DatalabClient(fake_api_url) as client:
+        graph = client.get_item_graph(display=True)
+        assert mocked_api["item-graph"].called
+        assert not mocked_api["item-graph"].calls.last.request.url.params
+        assert len(graph["nodes"]) == 3
+        assert len(graph["edges"]) == 2
+
+        graph = client.get_item_graph(
+            "KUVEKJ", hide_collections=False, max_depth=2, collection_id="test_collection"
+        )
+        params = mocked_api["item-graph-KUVEKJ"].calls.last.request.url.params
+        assert params["hide_collections"] == "false"
+        assert params["max_depth"] == "2"
+        assert params["collection_id"] == "test_collection"
+        assert set(graph) == {"nodes", "edges"}
+
+
+def test_get_item_graph_networkx(mocked_api, fake_api_url):
+    nx = pytest.importorskip("networkx")
+    with DatalabClient(fake_api_url) as client:
+        graph = client.get_item_graph("KUVEKJ", as_networkx=True)
+        assert isinstance(graph, nx.DiGraph)
+        assert set(graph.nodes) == {"parent", "KUVEKJ", "sibling"}
+        assert set(graph.successors("parent")) == {"KUVEKJ", "sibling"}
+        assert graph.nodes["KUVEKJ"]["name"] == "Child"
+        assert graph.nodes["KUVEKJ"]["special"] is True
