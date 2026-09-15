@@ -6,7 +6,7 @@ from getpass import getpass
 from importlib.metadata import version
 from typing import Any
 
-import httpx
+import httpx2
 from rich.logging import RichHandler
 
 from .utils import AutoPrettyPrint
@@ -34,9 +34,9 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     """
 
     _api_key: str | None = None
-    _session: httpx.Client | None = None
+    _session: httpx2.Client | None = None
     _headers: dict[str, str]
-    _timeout: httpx.Timeout = httpx.Timeout(10.0, read=60.0)
+    _timeout: httpx2.Timeout = httpx2.Timeout(10.0, read=60.0)
 
     interactive: bool = True
     """Whether the client is being used in an interactive context (e.g., CLI or notebook) or not.
@@ -103,7 +103,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         logging.basicConfig(level=log_level, handlers=[RichHandler()])
         self.log = logging.getLogger(__name__)
 
-        self._http_client = httpx.Client
+        self._http_client = httpx2.Client
         self._headers = {"User-Agent": f"Datalab Python API/{__version__}"}
 
         self._detect_api_url()
@@ -126,7 +126,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         Do not use the session for this, so we are not passing the API key to arbitrary URLs.
 
         """
-        response = httpx.get(self.datalab_api_url)
+        response = httpx2.get(self.datalab_api_url)
         match = re.search(
             r'<meta name="x_datalab_api_url" content="(.*?)">',
             response.text,
@@ -145,7 +145,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         raise NotImplementedError
 
     @property
-    def session(self) -> httpx.Client:
+    def session(self) -> httpx2.Client:
         if self._session is None:
             return self._http_client(headers=self.headers, timeout=self.timeout)
         return self._session
@@ -156,7 +156,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         return self._headers
 
     @property
-    def timeout(self) -> httpx.Timeout:
+    def timeout(self) -> httpx2.Timeout:
         """A timeout object to use for the datalab API session."""
         return self._timeout
 
@@ -246,7 +246,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             self._session.close()
 
     def _handle_response(
-        self, response: httpx.Response, url: str, expected_status: int | list[int] = 200
+        self, response: httpx2.Response, url: str, expected_status: int | list[int] = 200
     ) -> dict[str, Any]:
         """Handle HTTP response with consistent error handling.
 
@@ -390,7 +390,7 @@ This is likely a server-side bug. Please report this issue to the datalab develo
                 method, url, follow_redirects=True, timeout=timeout, **kwargs
             )
             return self._handle_response(response, url, expected_status)
-        except (httpx.RequestError, httpx.HTTPStatusError) as e:
+        except (httpx2.RequestError, httpx2.HTTPStatusError) as e:
             raise DatalabAPIError(f"Request failed for {url}: {e}")
 
     def _apply_elevation(self, method: str, kwargs: dict[str, Any]) -> dict[str, Any]:

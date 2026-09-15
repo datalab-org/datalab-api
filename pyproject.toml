@@ -71,11 +71,16 @@ documentation = "https://datalab-python-api.readthedocs.io"
 changelog = "https://github.com/datalab-org/datalab-api/releases"
 
 [tool.uv]
+exclude-dependencies = ["httpx", "httpcore"]
 cache-keys = [{ git = true }]
 
 [tool.versioningit.vcs]
 method = "git"
 default-tag = "0.0.1"
+
+[tool.pytest.ini_options]
+# respx's plugin imports httpx at startup, before conftest can alias it to httpx2
+addopts = "-p no:respx"
 
 [tool.mypy]
 # plugins = "pydantic.mypy"

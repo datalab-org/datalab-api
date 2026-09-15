@@ -1,9 +1,14 @@
 import json
 import os
 
-import respx
-from httpx import Response
+import httpx2
+from httpx2 import Response
 from pytest import fixture
+
+# respx imports `httpx`/`httpcore`; point those at httpx2 so its mocks patch our client
+httpx2.alias_httpx()
+
+import respx  # noqa: E402
 
 
 @fixture
