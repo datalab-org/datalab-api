@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "httpx2 ~= 2.13",                                 # better HTTP requests
     "rich >= 13,< 15",                                  # nicer terminal output
