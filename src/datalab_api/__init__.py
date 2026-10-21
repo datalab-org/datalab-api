@@ -501,7 +501,7 @@ class DatalabClient(BaseDatalabClient):
             RuntimeError: If the block update fails.
 
         """
-        payload = {k: v for k, v in block_data.items()}
+        payload = {**block_data}
         payload["block_id"] = block_id
         payload["blocktype"] = block_type
         payload["item_id"] = item_id
