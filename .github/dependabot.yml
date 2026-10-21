@@ -10,6 +10,8 @@ updates:
   labels:
   - dependency_updates
   versioning-strategy: "increase-if-necessary"
+  # Major bumps of production deps fall outside these groups, so each
+  # gets its own PR; the limit is raised so they aren't starved out.
   open-pull-requests-limit: 30
   groups:
     python-production:
@@ -18,6 +20,9 @@ updates:
       update-types:
         - minor
         - patch
+    python-security:
+      applies-to: security-updates
+      patterns: ["*"]
     python-development:
       applies-to: version-updates
       dependency-type: development
@@ -28,6 +33,7 @@ updates:
   ignore:
     - dependency-name: "bokeh"
       versions: [ ">=3" ]
+# Updates GH actions versions as often as needed
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
