@@ -1,3 +1,4 @@
+# This file was edited with the assistance of an AI model and requires human review from the contributor.
 from __future__ import annotations
 
 import warnings
@@ -12,6 +13,8 @@ from .utils import networkx_from_item_graph
 
 if TYPE_CHECKING:
     import networkx as nx
+
+    from .models import DatalabItem, ItemModels
 
 __all__ = ("DatalabClient", "DuplicateItemError", "__version__")
 
@@ -70,12 +73,86 @@ class DatalabClient(BaseDatalabClient):
         self.block_info = block_info_data["data"]
         return self.block_info
 
-    def get_items(self, item_type: str | None = "samples") -> list[dict[str, Any]]:
+    def get_item_types(self) -> list[dict[str, Any]]:
+        """Return the list of item types available on this instance, including
+        their JSON schemas and any UI metadata (from the `/info/types` endpoint).
+
+        Since *datalab* v0.8.0, this includes any custom item types registered by
+        the deployment (whose types start with an underscore, e.g., `_my_samples`).
+
+        The type information is stored on the client and can be accessed
+        by the `item_types_info` attribute.
+
+        Returns:
+            A list of item types, each with an `id` and `attributes` (including `schema`).
+
+        """
+        types_url = f"{self.datalab_api_url}/info/types"
+        types_data = self._get(types_url)
+        self.item_types_info = types_data["data"]
+        return self.item_types_info
+
+    def load_models(self) -> ItemModels:
+        """(Re)build the item models from the schemas served by this instance,
+        storing them under `models`.
+
+        Returns:
+            The generated item models.
+
+        """
+        from .models import build_item_models
+
+        self._models = build_item_models(self.get_item_types(), client=self)
+        return self._models
+
+    @property
+    def models(self) -> ItemModels:
+        """Pydantic models for each item type available on this instance,
+        generated from the JSON schemas served at `/info/types` (fetched on first access).
+
+        Models are available by class name or by item type, e.g.,
+        `client.models.Sample`, `client.models["samples"]`, or for custom types
+        `client.models.MySample` / `client.models["_my_samples"]`. They are bound
+        to this client, so instances can be created, saved and refreshed directly:
+
+        ```python
+        sample = client.models.Sample(item_id="abc", name="My sample")
+        sample.create()
+        sample.chemform = "NaCl"
+        sample.save()
+        ```
+
+        """
+        if self._models is None:
+            return self.load_models()
+        return self._models
+
+    def _wants_models(self, as_model: bool | None) -> bool:
+        return self.use_models if as_model is None else as_model
+
+    def _to_model(self, data: dict[str, Any]) -> DatalabItem | dict[str, Any]:
+        """Convert item data from the server into an instance of the appropriate model."""
+        item_type: str = data.get("type", "")
+        if item_type not in self.models:
+            # The type may have been registered since the models were built
+            self.load_models()
+        if item_type not in self.models:
+            warnings.warn(f"No model available for item type {item_type!r}; returning a dict.")
+            return data
+        return self.models[item_type].from_api(data, client=self)
+
+    def get_items(
+        self, item_type: str | None = "samples", as_model: bool | None = None
+    ) -> list[dict[str, Any]] | list[DatalabItem]:
         """List items of the given type available to the authenticated user.
 
         Parameters:
             item_type: The type of item to list. Defaults to "samples". Other
-            choices will trigger a call to the `/<item_type>` endpoint of the API.
+                choices will trigger a call to the `/<item_type>` endpoint of the API.
+                Custom item types are currently listed alongside samples.
+            as_model: Whether to return model instances rather than dictionaries
+                (defaults to the client's `use_models` setting). Note that these are
+                summaries, so not all fields are populated.
 
         Returns:
             A list of items of the given type.
@@ -97,20 +174,29 @@ class DatalabClient(BaseDatalabClient):
         if isinstance(items, dict):
             if item_type in items:
                 # Old approach
-                return items[item_type]
-            if "items" in items:
-                return items["items"]
+                items = items[item_type]
+            elif "items" in items:
+                items = items["items"]
+
+        if self._wants_models(as_model):
+            return [self._to_model(item) for item in items]  # type: ignore
 
         return items  # type: ignore
 
     def search_items(
-        self, query: str, item_types: Iterable[str] | str = ("samples", "cells")
-    ) -> list[dict[str, Any]]:
+        self,
+        query: str,
+        item_types: Iterable[str] | str = ("samples", "cells"),
+        as_model: bool | None = None,
+    ) -> list[dict[str, Any]] | list[DatalabItem]:
         """Search for items of the given types that match the query.
 
         Parameters:
             query: Free-text query to search for.
             item_types: The types of items to search for. Defaults to ["samples", "cells"].
+            as_model: Whether to return model instances rather than dictionaries
+                (defaults to the client's `use_models` setting). Note that these are
+                summaries, so not all fields are populated.
 
         Returns:
             An ordered list of items of the given types that match the query.
@@ -123,32 +209,56 @@ class DatalabClient(BaseDatalabClient):
             f"{self.datalab_api_url}/search-items?query={query}&types={','.join(item_types)}"
         )
         items = self._get(search_items_url)
+        if self._wants_models(as_model):
+            return [self._to_model(item) for item in items["items"]]  # type: ignore
         return items["items"]
 
     def create_item(
         self,
         item_id: str | None = None,
-        item_type: str = "samples",
-        item_data: dict[str, Any] | None = None,
+        item_type: str | None = None,
+        item_data: dict[str, Any] | DatalabItem | None = None,
         collection_id: str | None = None,
         collection_ids: str | Iterable[str] | None = None,  # alias for collection_id
         group_ids: str | Iterable[str] | None = None,
-    ) -> dict[str, Any]:
+        as_model: bool | None = None,
+    ) -> dict[str, Any] | DatalabItem:
         """Create an item with a given ID and item data.
 
         Parameters:
             item_id: The ID of the item to create, if set to `None`, the server will generate one.
-            item_type: The type of item to create, e.g., 'samples', 'cells'.
-            item_data: The data for the item.
+            item_type: The type of item to create, e.g., 'samples', 'cells' (defaults to
+                'samples', or the type of the model passed as `item_data`).
+            item_data: The data for the item, either as a dictionary or as an instance of one
+                of the client's `models` (in which case only explicitly set fields are sent).
             collection_id: The ID of the collection to add the item to (optional).
                 If such a collection does not exist, one will be made. Deprecated in favor of `collection_ids`.
             collection_ids: The ID or IDs of the collection(s) to add the item to (optional).
             group_ids: The ID or IDs of the group(s) to share the item with (optional).
+            as_model: Whether to return a model instance rather than a dictionary
+                (defaults to the client's `use_models` setting).
 
         """
-        new_item = {}
-        if item_data is not None:
+        new_item: dict[str, Any] = {}
+        from .models import DatalabItem
+
+        if isinstance(item_data, DatalabItem):
+            if item_type is not None and item_type != item_data.item_type:
+                raise ValueError(
+                    f"{item_type=} does not match the type of the provided model {item_data.item_type!r}"
+                )
+            item_type = item_data.item_type
+            new_item = item_data.changes()
+            if item_id is None:
+                item_id = new_item.get("item_id")
+        elif item_data is not None:
             new_item = item_data
+        if item_type is None:
+            item_type = "samples"
+        if isinstance(collection_ids, str):
+            collection_ids = [collection_ids]
+        if isinstance(group_ids, str):
+            group_ids = [group_ids]
         new_item.update({"item_id": item_id, "type": item_type})
 
         if new_item["item_id"] is None:
@@ -190,19 +300,27 @@ class DatalabClient(BaseDatalabClient):
             json={"new_sample_data": new_item, "generate_id_automatically": item_id is None},
             expected_status=201,
         )
+        if self._wants_models(as_model):
+            return self._to_model(created_item["sample_list_entry"])
         return created_item["sample_list_entry"]
 
-    def update_item(self, item_id: str, item_data: dict[str, Any]) -> dict[str, Any]:
+    def update_item(self, item_id: str, item_data: dict[str, Any] | DatalabItem) -> dict[str, Any]:
         """Update an item with the given item data.
 
         Parameters:
             item_id: The ID of the item to update.
-            item_data: The new data for the item.
+            item_data: The new data for the item; any fields not provided are left unchanged.
+                If an instance of one of the client's `models` is passed, only the fields
+                changed since it was loaded are sent (see `DatalabItem.save`).
 
         Returns:
-            A dictionary of the updated item data.
+            The server response.
 
         """
+        from .models import DatalabItem
+
+        if isinstance(item_data, DatalabItem):
+            item_data = item_data.changes()
         update_item_data = {"item_id": item_id, "data": item_data}
         update_item_url = f"{self.datalab_api_url}/save-item/"
         updated_item = self._post(update_item_url, json=update_item_data)
@@ -213,13 +331,16 @@ class DatalabClient(BaseDatalabClient):
         item_id: str | None = None,
         refcode: str | None = None,
         load_blocks: bool = False,
-    ) -> dict[str, Any]:
+        as_model: bool | None = None,
+    ) -> dict[str, Any] | DatalabItem:
         """Get an item with a given ID or refcode.
 
         Parameters:
             item_id: The ID of the item to search for.
             refcode: The refcode of the item to search fork
             load_blocks: Whether to load the blocks associated with the item.
+            as_model: Whether to return a model instance rather than a dictionary
+                (defaults to the client's `use_models` setting).
 
         Returns:
             A dictionary of item data for the item with the given ID or refcode.
@@ -254,6 +375,9 @@ class DatalabClient(BaseDatalabClient):
                     item_id=ret_item_id, block_id=block_id, block_data=block
                 )
                 item["item_data"]["blocks_obj"][block_id] = block_data
+
+        if self._wants_models(as_model):
+            return self._to_model(item["item_data"])
 
         return item["item_data"]
 
@@ -319,7 +443,7 @@ class DatalabClient(BaseDatalabClient):
 
         """
 
-        item_data = self.get_item(item_id)
+        item_data = self.get_item(item_id, as_model=False)
         for f in item_data.get("files", []):
             url = f"{self.datalab_api_url}/files/{f['immutable_id']}/{f['name']}"
             if Path(f["name"]).exists():
@@ -465,7 +589,7 @@ class DatalabClient(BaseDatalabClient):
             if isinstance(file_ids, str):
                 file_ids = [file_ids]
             # check that the file is attached to the item
-            item = self.get_item(item_id=item_id, load_blocks=False)
+            item = self.get_item(item_id=item_id, load_blocks=False, as_model=False)
             attached_file_ids = set(item["file_ObjectIds"])
             if not set(file_ids).issubset(attached_file_ids):
                 raise RuntimeError(

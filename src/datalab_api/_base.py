@@ -1,3 +1,4 @@
+# This file was edited with the assistance of an AI model and requires human review from the contributor.
 import logging
 import os
 import re
@@ -52,11 +53,24 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
     block_info: list[dict[str, Any]] = []
     """The `data` response from the `/info/blocks` endpoint of the Datalab API."""
 
+    item_types_info: list[dict[str, Any]] = []
+    """The `data` response from the `/info/types` endpoint of the Datalab API,
+    populated on first use of the `models` (or by calling `get_item_types`)."""
+
+    use_models: bool = False
+    """Whether item methods (`get_item`, `get_items`, `search_items`, `create_item`) should
+    return instances of the models generated from the server's schemas
+    (see `DatalabClient.models`), rather than dictionaries. Can be overridden per call
+    with the `as_model` argument, or set at any point in the client's lifetime."""
+
     bad_server_versions: tuple[tuple[int, int, int]] | None = ((0, 2, 0),)
     """Any known server versions that are not supported by this client."""
 
     min_server_version: tuple[int, int, int] = (0, 1, 0)
     """The minimum supported server version that this client supports."""
+
+    _models: Any = None
+    """The cached item models generated from the server schemas (see `DatalabClient.models`)."""
 
     elevate_permissions: bool = False
     """Whether to make requests in datalab's admin super-user mode, i.e., with
@@ -73,6 +87,7 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
         datalab_api_url: str,
         log_level: str = "WARNING",
         elevate_permissions: bool = False,
+        use_models: bool = False,
     ):
         """Creates an authenticated client.
 
@@ -90,11 +105,15 @@ class BaseDatalabClient(metaclass=AutoPrettyPrint):
             elevate_permissions: Whether to read items belonging to other users, using
                 datalab's admin super-user mode. Requires the API key in use to belong
                 to an admin account; ignored by the server otherwise. Defaults to False.
-
+            use_models: Whether item methods should return instances of the models
+                generated from the server's schemas, rather than dictionaries
+                (see `DatalabClient.models`). Defaults to False.
 
         """
 
         self.elevate_permissions = elevate_permissions
+        self.use_models = use_models
+        self._models = None
         self.datalab_api_url = datalab_api_url
         if not self.datalab_api_url:
             raise ValueError("No Datalab API URL provided.")
