@@ -1,5 +1,7 @@
+# This file was edited with the assistance of an AI model and requires human review from the contributor.
 import json
 import os
+from pathlib import Path
 
 import httpx2
 from httpx2 import Response
@@ -30,6 +32,7 @@ def mocked_api(
     fake_samples_json,
     fake_sample_json,
     fake_collection_json,
+    fake_item_types_json,
 ):
     with respx.mock(base_url=fake_api_url, assert_all_called=False) as respx_mock:
         fake_api = respx_mock.get("/", name="api")
@@ -43,6 +46,30 @@ def mocked_api(
 
         fake_block_info_api = respx_mock.get("/info/blocks", name="info-blocks")
         fake_block_info_api.return_value = Response(200, json=fake_block_info_json)
+
+        fake_item_types_api = respx_mock.get("/info/types", name="info-types")
+        fake_item_types_api.return_value = Response(200, json=fake_item_types_json)
+
+        def _create_item(request):
+            """Echo back the created item, as the server would, with a generated refcode."""
+            body = json.loads(request.content)
+            new_item = dict(body["new_sample_data"])
+            new_item["refcode"] = "test:NEWITM"
+            if body.get("generate_id_automatically"):
+                new_item["item_id"] = "NEWITM"
+            new_item["immutable_id"] = "6808d7fb47ccfd57b44da999"
+            new_item["creator_ids"] = ["6574f788aabb227db8d1b14e"]
+            new_item["date"] = "2026-11-03T12:00:00+00:00"
+            return Response(
+                201,
+                json={
+                    "status": "success",
+                    "item_id": new_item["item_id"],
+                    "sample_list_entry": new_item,
+                },
+            )
+
+        respx_mock.post("/new-sample/", name="new-sample").side_effect = _create_item
 
         fake_samples_api = respx_mock.get("/samples", name="samples")
         fake_samples_api.return_value = Response(200, json=fake_samples_json)
@@ -149,6 +176,14 @@ def mocked_api(
         )
 
         yield respx_mock
+
+
+@fixture
+def fake_item_types_json():
+    """Returns a mocked JSON response for the API /info/types endpoint, as served by
+    a datalab v0.8.0 instance with two custom item types registered (`_my_samples`,
+    a `Sample` subclass, and `_my_items`, a direct `Item` subclass)."""
+    return json.loads((Path(__file__).parent / "fixtures" / "info_types.json").read_text())
 
 
 @fixture

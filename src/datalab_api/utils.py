@@ -1,3 +1,4 @@
+# This file was edited with the assistance of an AI model and requires human review from the contributor.
 import functools
 
 from rich.console import Console
@@ -19,42 +20,49 @@ def pretty_displayer(method):
         page_limit = kwargs.pop("page_limit", 10)
         result = method(self, *args, **kwargs)
         if display:
-            blocks = None
-            if isinstance(result, dict):
-                if "blocks_obj" in result:
-                    blocks = result["blocks_obj"]
-                elif "blocktype" in result:
-                    blocks = {result["block_id"]: result}
-                    result = None
-                if blocks:
-                    for block in blocks.values():
-                        if "bokeh_plot_data" in block:
-                            bokeh_from_json(block)
-                if result:
-                    pprint(result, max_length=None, max_string=100, max_depth=3)
-            elif isinstance(result, list):
-                try:
-                    table = Table(show_lines=True)
-                    table.add_column("type", overflow="crop", justify="center")
-                    table.add_column("ID", style="cyan", no_wrap=True)
-                    table.add_column("refcode", style="magenta", no_wrap=True)
-                    table.add_column("name", width=30, overflow="ellipsis", no_wrap=True)
-                    for item in result[:page_limit]:
-                        table.add_row(
-                            item["type"][0].upper(),
-                            item["item_id"],
-                            item["refcode"],
-                            item["name"],
-                            end_section=True,
-                        )
-                    console = Console()
-                    console.print(table)
-                except Exception:
-                    pprint(result, max_length=None, max_string=100, max_depth=3)
-
+            _display(result, page_limit)
         return result
 
     return rich_wrapper
+
+
+def _display(result, page_limit: int = 10) -> None:
+    """Display the result of a client method, as described in `pretty_displayer`."""
+    # Display generated models (see `datalab_api.models`) via their JSON representation
+    if hasattr(result, "to_dict"):
+        result = result.to_dict()
+    blocks = None
+    if isinstance(result, dict):
+        if "blocks_obj" in result:
+            blocks = result["blocks_obj"]
+        elif "blocktype" in result:
+            blocks = {result["block_id"]: result}
+            result = None
+        if blocks:
+            for block in blocks.values():
+                if block and block.get("bokeh_plot_data"):
+                    bokeh_from_json(block)
+        if result:
+            pprint(result, max_length=None, max_string=100, max_depth=3)
+    elif isinstance(result, list):
+        try:
+            table = Table(show_lines=True)
+            table.add_column("type", overflow="crop", justify="center")
+            table.add_column("ID", style="cyan", no_wrap=True)
+            table.add_column("refcode", style="magenta", no_wrap=True)
+            table.add_column("name", width=30, overflow="ellipsis", no_wrap=True)
+            for item in result[:page_limit]:
+                table.add_row(
+                    item["type"].lstrip("_")[0].upper(),
+                    item["item_id"],
+                    item["refcode"],
+                    item["name"],
+                    end_section=True,
+                )
+            console = Console()
+            console.print(table)
+        except Exception:
+            pprint(result, max_length=None, max_string=100, max_depth=3)
 
 
 class AutoPrettyPrint(type):
